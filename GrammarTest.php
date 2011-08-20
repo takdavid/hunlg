@@ -34,6 +34,8 @@ class EmberTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('fuzionál', (string) GFactory::parseNP('fúzió')->appendSuffix(GFactory::parseSuffixum('nál')));
         $this->assertEquals('szlavista', (string) GFactory::parseNP('szláv')->appendSuffix(GFactory::parseSuffixum('ista')));
         $this->assertEquals('privatizál', (string) GFactory::parseNP('privát')->appendSuffix(GFactory::parseSuffixum('izál')));
+
+        $this->assertEquals('katonasága', (string) GFactory::parseNP('katona')->appendSuffix(GFactory::parseSuffixum('sÁg'))->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
     }
 
     public function testPossessive()
@@ -74,6 +76,7 @@ class EmberTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('kortesje',   (string) GFactory::parseNP('kortes')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
         $this->assertEquals('maceszje',   (string) GFactory::parseNP('macesz')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
         $this->assertEquals('trapézja',   (string) GFactory::parseNP('trapéz')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('rasszja',   (string) GFactory::parseNP('rassz')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
 
         $this->assertEquals('padja',   (string) GFactory::parseNP('pad')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
         $this->assertEquals('embere',   (string) GFactory::parseNP('ember')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
@@ -129,27 +132,52 @@ class EmberTest extends PHPUnit_Framework_TestCase
 
         unset($N);
         $N = GFactory::parseNP('ház');
+        $this->assertEquals('házam',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1, 1)));
         $this->assertEquals('házaim',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1, 3)));
         $this->assertEquals('házaid',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 2, 3)));
+        $this->assertEquals('házad',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 2, 1)));
+        $this->assertEquals('háza',    (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3, 1)));
         $this->assertEquals('házai',    (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3, 3)));
+        $this->assertEquals('házunk',  (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 1, 1)));
         $this->assertEquals('házaink',  (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 1, 3)));
+        $this->assertEquals('házatok', (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2, 1)));
         $this->assertEquals('házaitok', (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2, 3)));
+        $this->assertEquals('házuk',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 3, 1)));
         $this->assertEquals('házaik',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 3, 3)));
+
+        unset($N);
+        $N = GFactory::parseNP('marha');
+        $this->assertEquals('marhám', (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1, 1)));
+        $this->assertEquals('marháim', (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1, 3)));
+        $this->assertEquals('marhád', (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 2, 1)));
+        $this->assertEquals('marháid', (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 2, 3)));
+        $this->assertEquals('marhája', (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3, 1)));
+        $this->assertEquals('marhái', (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3, 3)));
+        $this->assertEquals('marhánk', (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 1, 1)));
+        $this->assertEquals('marháink', (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 1, 3)));
+        $this->assertEquals('marhátok', (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2, 1)));
+        $this->assertEquals('marháitok', (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2, 3)));
+        $this->assertEquals('marhájuk', (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 3, 1)));
+        $this->assertEquals('marháik', (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 3, 3)));
     }
 
     public function testPossessor()
     {
         unset($N);
         $N = GFactory::parseNP('ős');
-        $this->assertEquals('őseimé',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1, 3))->appendSuffix(PossessiveSuffixum::makePossessor(1)));
-        $this->assertEquals('őseidéi',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 2, 3))->appendSuffix(PossessiveSuffixum::makePossessor(3)));
-        $this->assertEquals('őseiéiről',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3, 3))->appendSuffix(PossessiveSuffixum::makePossessor(3))->makeDelativus());
+        $this->assertEquals('őseimé',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1, 3))->appendSuffix(PossessorSuffixum::makePossessor(1)));
+        $this->assertEquals('őseidéi',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 2, 3))->appendSuffix(PossessorSuffixum::makePossessor(3)));
+        $this->assertEquals('őseié',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3, 3))->appendSuffix(PossessorSuffixum::makePossessor(1)));
+        $this->assertEquals('őseiéiről',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3, 3))->appendSuffix(PossessorSuffixum::makePossessor(3))->makeDelativus());
 
         unset($N);
         $N = GFactory::parseNP('ház');
-        $this->assertEquals('házaimé',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1, 3))->appendSuffix(PossessiveSuffixum::makePossessor(1)));
-        $this->assertEquals('házaiméi',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1, 3))->appendSuffix(PossessiveSuffixum::makePossessor(3)));
-        $this->assertEquals('házaiméiról',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1, 3))->appendSuffix(PossessiveSuffixum::makePossessor(3))->makeDelativus());
+        $this->assertEquals('házaimé',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1, 3))->appendSuffix(PossessorSuffixum::makePossessor(1)));
+        $this->assertEquals('házaiméi',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1, 3))->appendSuffix(PossessorSuffixum::makePossessor(3)));
+        $this->assertEquals('házaiméiról',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1, 3))->appendSuffix(PossessorSuffixum::makePossessor(3))->makeDelativus());
+        $this->assertEquals('házaié',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3, 3))->appendSuffix(PossessorSuffixum::makePossessor(1)));
+
+        $this->assertEquals('Vargáé', (string) GFactory::parseNP('Varga')->appendSuffix(PossessorSuffixum::makePossessor()));
     }
 
     public function testVow()
@@ -167,8 +195,8 @@ class EmberTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(GFactory::parseV('zöldül')->appendSuffix(GFactory::parseSuffixum('Ás'))->isOpening());
         $this->assertTrue(GFactory::parseV('zöldül')->appendSuffix(GFactory::parseSuffixum('Ás'))->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->isOpening());
 
-        $this->assertTrue(GFactory::parseNP('bátor')->isVolatile());
-        $this->assertTrue(GFactory::parseSuffixum('_Vk')->isVolatile(), 'plural suffixum is volatile');
+        $this->assertTrue(GFactory::parseNP('bátor')->isAlternating());
+        $this->assertTrue(GFactory::parseSuffixum('_Vk')->isAlternating(), 'plural suffixum is volatile');
         $this->assertEquals('ajkak',  (string) GFactory::parseNP('ajak')->makePlural());
         $this->assertEquals('baglyok', (string) GFactory::parseNP('bagoly')->makePlural());
         $this->assertEquals('bajszok',  (string) GFactory::parseNP('bajusz')->makePlural());
@@ -244,6 +272,9 @@ class EmberTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('tüzünk', (string) GFactory::parseNP('tűz')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 1)));
         $this->assertEquals('vizünk', (string) GFactory::parseNP('viz')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 1)));
 
+        $this->assertEquals('fűvel', (string) GFactory::parseNP('fű')->makeInstrumentalis());
+        $this->assertEquals('fával', (string) GFactory::parseNP('fa')->makeInstrumentalis());
+        $this->assertEquals('marhával', (string) GFactory::parseNP('marha')->makeInstrumentalis());
     }
 
     public function testAMNY()
@@ -253,10 +284,10 @@ class EmberTest extends PHPUnit_Framework_TestCase
         //$this->assertEquals('tartják', (string) GFactory::parseV('tart')->
         $this->assertEquals('házában', (string) GFactory::parseNP('ház')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3))->makeInessivus());
         $this->assertEquals('létrám', (string) GFactory::parseNP('létra')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1)));
-        //$this->assertEquals('marhái', (string) GFactory::parseNP('marha')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3, 3)));
+        $this->assertEquals('marhái', (string) GFactory::parseNP('marha')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3, 3)));
         $this->assertEquals('kutyául', (string) GFactory::parseNP('kutya')->makeEssivusFormalis());
         $this->assertEquals('deltáig', (string) GFactory::parseNP('delta')->makeTerminativus());
-        $this->assertEquals('Vargáé', (string) GFactory::parseNP('Varga')->appendSuffix(PossessiveSuffixum::makePossessor()));
+        $this->assertEquals('Vargát', (string) GFactory::parseNP('Varga')->makeAccusativus());
         $this->assertEquals('portán', (string) GFactory::parseNP('porta')->makeSuperessivus());
         $this->assertEquals('lustát', (string) GFactory::parseNP('lusta')->makeAccusativus());
         $this->assertEquals('medvét', (string) GFactory::parseNP('medve')->makeAccusativus());
@@ -270,14 +301,22 @@ class EmberTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('csempét', (string) GFactory::parseNP('csempe')->makeAccusativus());
         $this->assertEquals('estét', (string) GFactory::parseNP('este')->makeAccusativus());
         $this->assertEquals('feketét', (string) GFactory::parseNP('fekete')->makeAccusativus());
+
         $this->assertTrue(GFactory::parseSuffixum('bAn')->isAMNYRight());
         $this->assertFalse(GFactory::parseSuffixum('kor')->isAMNYRight());
+        $this->assertEquals('órakor', (string) GFactory::parseNP('óra')->makeTemporalis());
         $this->assertFalse(GFactory::parseSuffixum('ista')->isAMNYRight());
         $this->assertFalse(GFactory::parseSuffixum('izmus')->isAMNYRight());
         $this->assertFalse(GFactory::parseSuffixum('szOr')->isAMNYRight());
         $this->assertFalse(GFactory::parseSuffixum('sÁg')->isAMNYRight());
+        $this->assertEquals('butaság', (string) GFactory::parseNP('buta')->appendSuffix(GFactory::parseSuffixum('sÁg')));
         $this->assertFalse(GFactory::parseSuffixum('i')->isAMNYRight());
+        $this->assertEquals('Budai', (string) GFactory::parseNP('Buda')->appendSuffix(GFactory::parseSuffixum('i')));
+        $this->assertEquals('Budái', (string) GFactory::parseNP('Buda')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3, 3)));
         $this->assertFalse(GFactory::parseSuffixum('ként')->isAMNYRight());
+        $this->assertEquals('butaként', (string) GFactory::parseNP('buta')->appendSuffix(GFactory::parseSuffixum('ként')));
+        $this->assertEquals('butát', (string) GFactory::parseNP('buta')->makeAccusativus());
+
         $this->assertEquals('távoztát', (string) GFactory::parseNP('távozta')->makeAccusativus());
         $this->assertEquals('távoztakor', (string) GFactory::parseNP('távozta')->appendSuffix(GFactory::parseSuffixum('kor')));
         $this->assertEquals('katonák', (string) GFactory::parseNP('katona')->makePlural());
@@ -324,13 +363,13 @@ class EmberTest extends PHPUnit_Framework_TestCase
     {
         unset($N);
         $N = GFactory::parseNP('ember');
+        $this->assertEquals('miatta', (string) $N->makeCausalis()->pronominalize());
         $this->assertEquals('ember', (string) $N->makeNominativus());
         $this->assertEquals('emberek', (string) $N->makePlural());
         $this->assertEquals('embert', (string) $N->makeAccusativus());
         $this->assertEquals('embereket', (string) $N->makePlural()->makeAccusativus());
         $this->assertEquals('emberért', (string) $N->makeCausalisFinalis());
         $this->assertEquals('emberekért', (string) $N->makePlural()->makeCausalisFinalis());
-        $this->assertEquals('miatta', (string) $N->makeCausalis()->pronominalize());
         $this->assertEquals('embernek', (string) $N->makeDativus());
         $this->assertEquals('embereknek', (string) $N->makePlural()->makeDativus());
         $this->assertEquals('embereknek', (string) $N->makePlural()->makeGenitivus());

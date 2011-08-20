@@ -13,6 +13,7 @@ class Phonology
      * [-I]
      * [12] short or long
      * [-t] is transparent for I
+     * ,[-O] is_opening
      */
     public static $phonocode = array(
         'a' => 'A--1-',
@@ -130,17 +131,16 @@ class Phonology
         'e' => 'é',
     );
 
+    // magánhangzó-rövidülések
     public static function doMR($ortho)
     {
         return self::tr($ortho, self::$vtmr_map);
     }
 
+    // utolsó alsó magánhangzó nyúlása
     public static function doAMNY($ortho)
     {
-        $last = mb_substr($ortho, -1, 1);
-        if (isset(self::$amny_map[$last]))
-            $ortho = mb_substr($ortho, 0, -1).self::$amny_map[$last];
-        return $ortho;
+        return mb_substr($ortho, 0, -1).self::tr(mb_substr($ortho, -1, 1), self::$amny_map);
     }
 
     public static function tr($ortho, $map)
@@ -159,133 +159,44 @@ class Phonology
     }
 
     public static $vowelmaps = array(
-        true => array(
-            '--' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'o', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'a', 'W' => 'o'),
-            'U-' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'o', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'a', 'W' => 'o'),
-            '-I' => array( 'A' => 'e', 'Á' => 'é', 'E' => 'e', 'O' => 'e', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'V' => 'e', 'W' => 'e'),
-            'UI' => array( 'A' => 'e', 'Á' => 'é', 'E' => 'e', 'O' => 'ö', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'V' => 'e', 'W' => 'e'),
-        ),
-        false => array(
-            '--' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'o', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'o', 'W' => 'o'),
-            'U-' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'o', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'o', 'W' => 'o'),
-            '-I' => array( 'A' => 'e', 'Á' => 'é', 'E' => 'e', 'O' => 'e', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'V' => 'e', 'W' => 'e'),
-            'UI' => array( 'A' => 'e', 'Á' => 'é', 'E' => 'ö', 'O' => 'ö', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'V' => 'ö', 'W' => 'e'),
-        ),
+            '--,O' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'o', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'a', 'W' => 'o'),
+            'U-,O' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'o', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'a', 'W' => 'o'),
+            '-I,O' => array( 'A' => 'e', 'Á' => 'é', 'E' => 'e', 'O' => 'e', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'V' => 'e', 'W' => 'e'),
+            'UI,O' => array( 'A' => 'e', 'Á' => 'é', 'E' => 'e', 'O' => 'ö', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'V' => 'e', 'W' => 'e'),
+            '--,-' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'o', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'o', 'W' => 'o'),
+            'U-,-' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'o', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'o', 'W' => 'o'),
+            '-I,-' => array( 'A' => 'e', 'Á' => 'é', 'E' => 'e', 'O' => 'e', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'V' => 'e', 'W' => 'e'),
+            'UI,-' => array( 'A' => 'e', 'Á' => 'é', 'E' => 'ö', 'O' => 'ö', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'V' => 'ö', 'W' => 'e'),
     );
 
-    public static function addSuffix(& $nomen, & $suffix)
+    public static function interpolateVowels(& $stem, $string)
     {
-        $suffixcode = (string) $suffix;
-
-        if (mb_substr($suffixcode, 0, 1) === 'v')
-        {
-            $last = self::getLastCons($nomen->ortho);
-            $suffixcode = $last.mb_substr($suffixcode, 1);
-        }
-        
-        $stem = $nomen->ortho;
-        if ($nomen->isVTMR() && $suffix->isVTMR())
-            $stem = self::doMR($nomen->ortho);
-        //print $nomen->lemma.' => $nomen->isBTMR()='.(int) $nomen->isBTMR().' $suffix->isBTMR()='.(int) $suffix->isBTMR()."\n";
-        if ($nomen->isBTMR() && $suffix->isBTMR())
-            $stem = self::doMR($nomen->ortho);
-        if (!is_object($nomen)) { print 'nomen is '; var_dump($nomen); }
-        if (!is_object($suffix)) { print 'suffix is '; var_dump($suffix); }
-        //print 'isAMNYLeft='.(int) $nomen->isAMNYLeft().' isAMNYRight='.(int) $suffix->isAMNYRight();
-        if ($nomen->isAMNYLeft() && $suffix->isAMNYRight())
-            $stem = self::doAMNY($nomen->ortho);
-        if ($nomen->isVolatile() && $suffix->isVolatile())
-            $stem = $nomen->lemma2;
-
-        //if ($suffix instanceof PossessiveSuffixum)
-        ////    print 'nomen '.$nomen->ortho.' is '.get_class($nomen).' ';
-
-        $is_opening = $nomen->isOpening();
-        $nomen_phonocode = 
-            (Phonology::needSuffixU($stem) ? 'U' : '-') . 
-            ($nomen->needSuffixI() ? 'I' : '-') ;
-        //print "\n".'lemma='.$nomen->lemma.' opening='.(int) $is_opening.' phonocode='.$nomen_phonocode;
-        $vowelmap = self::$vowelmaps[$is_opening][$nomen_phonocode];
-
-        $_suffix = '';
-        $len = mb_strlen($suffixcode);
-        for ($i = 0; $i < $len; $i++)
-        {
-            $chr = mb_substr($suffixcode, $i, 1);
-            if (isset($vowelmap[$chr]))
-                $_suffix .= $vowelmap[$chr];
-            else
-                $_suffix .= $chr;
-        }
-        //print "suffix/1=$_suffix ";
-
-        //print "stem=$stem ";
-
-        // birtokos A/jA
-        if ($suffix instanceof PossessiveSuffixum && $suffix->person === 3 && $nomen instanceof Nomen && $nomen->isJaje())
-            $_suffix = "j$_suffix";
-
-        //print "stem=$stem ";
-        // kötőhang
-        $chr0 = mb_substr($_suffix, 0, 1);
-        if ($chr0 === '_')
-        {
-            $suffix_vowel = mb_substr($_suffix, 1, 1);
-            $suffix_stem = mb_substr($_suffix, 2);
-            $is_last_vowel = self::isVowel(mb_substr($stem, -1, 1));
-            if ($nomen->isOpening() && !$is_last_vowel)
-            {
-                //print 1;
-                $_suffix = $suffix_vowel.$suffix_stem;
-            }
-            elseif ($suffix instanceof PossessiveSuffixum && !$is_last_vowel)
-            {
-                //print 2;
-                $_suffix = $suffix_vowel.$suffix_stem;
-            }
-            else
-            {
-                if (self::isValidSuffix($stem, $suffix_stem))
-                {
-                    //print 3;
-                    $_suffix = $suffix_stem;
-                }
-                else
-                {
-                    //print 4;
-                    $_suffix = $suffix_vowel.$suffix_stem;
-                }
-            }
-        }
-        //print "_suffix=$_suffix ";
-        //print "\n";
-
-        return $stem.$_suffix;
+        $vowelmap = self::$vowelmaps[$stem->needSuffixPhonocode()];
+        $suffix = self::tr($string, $vowelmap);
+        return $suffix;
     }
 
-    public static $invalid_suffix_regex_list = array(
-        '/[dkpt],t/',
-        '/[dghklmnrtvyz],k/',
-        '/r,n/',
-        '/s,t.+/', // @see barnulástok
-        '/r,t.+/',
-    );
-
-    public static function isValidSuffix($stem, $suffix)
-    {
-        $string = "$stem,$suffix";
-        foreach (self::$invalid_suffix_regex_list as $regex)
-            if (preg_match($regex, $string))
-                return false;
-        return true;
-    }
-
-    public static function getLastCons($ortho)
+    public static function getLastConsonant($ortho)
     {
         $last = mb_substr($ortho, -1, 1);
         if ($last === 'y')
             $last = mb_substr($ortho, -2, 2);
         return $last;
+    }
+
+    public static $invalid_suffix_regex_list = array(
+        '/[bcdfghkmptvw],t/',
+        '/[bcdfghklmnprstvwyz],[kmn]/',
+        '/[lrsy],t.+/', // @see barnulástok, hoteltek
+    );
+
+    public static function isValidSuffixConcatenation($ortho_stem, $ortho_suffix)
+    {
+        $string = "$ortho_stem,$ortho_suffix";
+        foreach (self::$invalid_suffix_regex_list as $regex)
+            if (preg_match($regex, $string))
+                return false;
+        return true;
     }
 
     public static $vowelmap_hl = array(
@@ -331,7 +242,28 @@ class Phonology
 
 }
 
-class Wordform
+interface iWordformPhonology
+{
+    public function isLastVowel();
+    public function isVTMR();
+    public function isBTMR();
+    public function isOpening();
+    public function isAMNYLeft();
+    public function isAMNYRight();
+    public function isAlternating();
+    public function needSuffixU();
+    public function needSuffixI();
+    public function needSuffixPhonocode();
+}
+
+interface iWordformMorphology
+{
+
+    public function & appendSuffix(Suffixum & $suffix);
+    public function onBeforeSuffixation(& $suffix);
+}
+
+class Wordform implements iWordformPhonology, iWordformMorphology
 {
     public $lemma = '';
     public $ortho = '';
@@ -340,7 +272,8 @@ class Wordform
     public $is_btmr = false; 
     public $is_opening = false; 
     public $is_amny = NULL;
-    public $is_volatile = false; 
+    public $is_alternating = false; 
+    public $needSuffixI = NULL;
 
     public function __construct($lemma, $ortho=NULL)
     {
@@ -349,16 +282,59 @@ class Wordform
         $this->vow = Phonology::getVow($this->ortho);
     }
 
+    // Helpers {{{
+
     public function __toString()
     {
         return $this->ortho;
     }
 
-    public function & appendSuffix($suffix)
+    public function & cloneAs($class)
     {
-        $clone = clone $this;
-        $clone->ortho = Phonology::addSuffix($clone, $suffix);
+        $clone = new $class($this->lemma, $this->ortho);
+        foreach ($this as $key => $val)
+            $clone->$key = $val;
         return $clone;
+    }
+
+    // }}}
+
+    // iWordformMorphology {{{
+
+    public function & appendSuffix(Suffixum & $suffix)
+    {
+        $input_class = $suffix->getInputClass();
+        if (!($this instanceof $input_class)) print 'this is a '.get_class($this).' while suffix '.$suffix->ortho.' wants '.$suffix->getInputClass()."\n";
+        assert('$this instanceof $input_class');
+        $stem = $this->cloneAs($suffix->getOutputClass());
+        $stem->onBeforeSuffixation($suffix);
+        $affix = clone $suffix;
+        $affix->onBeforeSuffixed($stem);
+        $interfix_ortho = $affix->getInterfix($stem);
+        $affix->onAfterSuffixed($stem);
+        $stem->ortho .= $interfix_ortho.$affix->ortho;
+        return $stem;
+    }
+
+    public function onBeforeSuffixation(& $suffix)
+    {
+        if ($this->isAlternating() && $suffix->isAlternating())
+            $this->ortho = $this->lemma2;
+        if ($this->isVTMR() && $suffix->isVTMR())
+            $this->ortho = Phonology::doMR($this->ortho);
+        if ($this->isBTMR() && $suffix->isBTMR())
+            $this->ortho = Phonology::doMR($this->ortho);
+        if ($this->isAMNYLeft() && $suffix->isAMNYRight())
+            $this->ortho = Phonology::doAMNY($this->ortho);
+    }
+
+    // }}}
+
+    // iWordformPhonology {{{
+
+    public function isLastVowel()
+    {
+        return Phonology::isVowel(mb_substr($this->ortho, -1, 1));
     }
 
     public function isVTMR()
@@ -392,24 +368,32 @@ class Wordform
             return $this->is_amny;
     }
 
-    public function isVolatile()
+    public function isAlternating()
     {
-        return $this->is_volatile;
+        return $this->is_alternating;
     }
 
-    /** @todo use lexicon is_birtokos_i
-    /** @todo move down from here
-     */
+    public function needSuffixU()
+    {
+        return Phonology::needSuffixU($this->ortho);
+    }
+
     public function needSuffixI()
     {
-        if ($this->lemma === 'híd')
-            return false;
-        if ($this->lemma === 'nyíl')
-            return false;
-        if ($this->lemma === 'oxigén')
-            return true;
+        if (!is_null($this->needSuffixI))
+            return $this->needSuffixI;
         return Phonology::needSuffixI($this->lemma);
     }
+
+    public function needSuffixPhonocode()
+    {
+        return 
+            ($this->needSuffixU() ? 'U' : '-') . 
+            ($this->needSuffixI() ? 'I' : '-') .
+            ($this->isOpening() ? ',O' : ',-') ;
+    }
+
+    // }}}
 
 }
 
@@ -459,16 +443,52 @@ interface VirtualNominalCases
 interface VirtualTemporalCases
 {
     public function & makeAntessivus();
-    public function & makeTemporalis();
+    public function & makeTemporalis(); // -kor
 }
 
-interface PersNum
+/*
+    Affix:
+        Adfix:
+            prefix
+            suffix
+        infix Minnesota + flippin > Minneflippinsota
+        interfix speed + meter > speed-o-meter
+        duplifix teeny > teeny-weeny
+        transfix ktb > kiteb
+        simulfix mouse > mice
+        suprafix !produce (noun) > pro!duce (verb)
+        disfix tipasli > tipli
+
+    prefix+prefix+st<infix>em-suffix-suffix
+     */
+
+interface iSuffixumMorphology
 {
-    public function & makeNumPers($numero = 1, $person = 3);
+    public function hasOptionalInterfix();
+    public function getOptionalInterfix();
+    public function getNonOptionalSuffix();
+    public function getInterfix(& $stem);
+    public function onAfterSuffixed(& $stem);
 }
 
-class Suffixum extends Wordform
+class Suffixum extends Wordform implements iSuffixumMorphology
 {
+
+    public $input_class = 'Nomen';
+    public $output_class = 'Nomen';
+    public $stop_jaje = false;
+
+    public function getInputClass()
+    {
+        return $this->input_class;
+    }
+
+    public function getOutputClass()
+    {
+        return $this->output_class;
+    }
+
+    // iWordformPhonology {{{
 
     public function isAMNYRight()
     {
@@ -477,46 +497,169 @@ class Suffixum extends Wordform
         return true;
     }
 
+    // }}}
+
+    // iSuffixumMorphology {{{
+
+    public function hasOptionalInterfix()
+    {
+        return (mb_substr($this->lemma, 0, 1) === '_');
+    }
+
+    public function getOptionalInterfix()
+    {
+        if ($this->hasOptionalInterfix())
+            return mb_substr($this->lemma, 1, 1);
+        else
+            return '';
+    }
+
+    public function getNonOptionalSuffix()
+    {
+        if ($this->hasOptionalInterfix())
+            return mb_substr($this->lemma, 2);
+        else
+            return $this->lemma;
+    }
+
+    // kötőhang
+    public function getInterfix(& $stem)
+    {
+        $interfix = '';
+        if ($this->hasOptionalInterfix())
+        {
+            $_interfix = $this->getOptionalInterfix();
+            $_interfix = Phonology::interpolateVowels($stem, $_interfix);
+            if ($stem->isOpening() && !$stem->isLastVowel())
+            {
+                $interfix = $_interfix;
+            }
+            elseif ($stem->isLastVowel())
+            {
+                $interfix = '';
+            }
+            elseif ($this instanceof PossessiveSuffixum)
+            {
+                $interfix = $_interfix;
+            }
+            else
+            {
+                if (Phonology::isValidSuffixConcatenation($stem->ortho, $this->ortho))
+                {
+                    $interfix = '';
+                }
+                else
+                {
+                    $interfix = $_interfix;
+                }
+            }
+        }
+        return $interfix;
+    }
+
+    public function onBeforeSuffixed(& $stem)
+    {
+        $ortho = $this->getNonOptionalSuffix();
+        if (mb_substr($ortho, 0, 1) === 'v') // v hasonul
+        {
+            if ($stem->isLastVowel())
+                $first = 'v';
+            else
+                $first = Phonology::getLastConsonant($stem->ortho);
+            $ortho = $first.mb_substr($ortho, 1);
+        }
+        $ortho = Phonology::interpolateVowels($stem, $ortho);
+        $this->ortho = $ortho;
+    }
+
+    public function onAfterSuffixed(& $stem)
+    {
+        if ($stem instanceof Nomen && $this->stop_jaje)
+            $stem->is_jaje = false;
+    }
+
+}
+
+interface PersNum
+{
+    public function & makeNumPers($numero = 1, $person = 3);
 }
 
 class PossessiveSuffixum extends Suffixum implements PersNum
 {
 
+    public $input_class = 'iPossessable';
+    public $output_class = 'Nomen';
     public $numero = 1;
     public $person = 3;
+    public $possessed_numero = 1;
 
     public static $suffixmap = array(
         1 => array(
-            1 => array(1 => '_Vm', 2 => 'Vd', 3 => 'A'),
+            1 => array(1 => '_Vm', 2 => '_Vd', 3 => 'A'),
             3 => array(1 => '_Unk', 2 => '_VtEk', 3 => 'Uk'),
         ),
         3 => array(
-            1 => array(1 => 'Aim', 2 => 'Aid', 3 => 'Ai'),
-            3 => array(1 => 'Aink', 2 => '_AitWk', 3 => 'Aik'),
+            1 => array(1 => '_Aim', 2 => '_Aid', 3 => '_Ai'),
+            3 => array(1 => '_Aink', 2 => '_AitWk', 3 => '_Aik'),
         ),
     );
 
-    public function & makeNumPers($numero = 1, $person = 3, $birtok_numero = 1)
+    public function & makeNumPers($numero = 1, $person = 3, $possessed_numero = 1)
     {
-        $suffixcode = self::$suffixmap[$birtok_numero][$numero][$person];
+        $suffixcode = self::$suffixmap[$possessed_numero][$numero][$person];
         $obj = new PossessiveSuffixum($suffixcode);
         $obj->numero = $numero;
         $obj->person = $person;
+        $obj->possessed_numero = $possessed_numero;
         $obj->is_opening = true;
         $obj->is_vtmr = true;
-        $obj->is_volatile = true;
+        $obj->is_alternating = true;
         return $obj;
     }
 
-    public function makePossessor($numero = 1)
+    public function onBeforeSuffixed(iPossessable & $stem)
     {
-        $suffixcode = ($numero === 1) ? 'é' : 'éi';
-        $obj = new Suffixum($suffixcode);
-        $obj->numero = $numero;
+        parent::onBeforeSuffixed($stem);
+        // birtokos A/jA
+        if ($this->person === 3 && $this->possessed_numero === 1 && $stem->isJaje())
+            $this->ortho = 'j'.$this->ortho;
+    }
+
+    public function onAfterSuffixed(& $stem)
+    {
+        $stem->is_opening = true;
+        $this->numero = $stem->numero;
+    }
+
+}
+
+/** 
+ * Birtokjel
+ */
+class PossessorSuffixum extends Suffixum
+{
+    public $input_class = 'iPossessable';
+    public $output_class = 'Nomen';
+    public $numero = 1;
+    public $person = 3;
+    public $possessed_numero = 1;
+
+    public static function makePossessor($possessed_numero = 1)
+    {
+        $suffixcode = ($possessed_numero === 1) ? 'é' : 'éi';
+        $obj = new PossessorSuffixum($suffixcode);
+        $obj->possessed_numero = $possessed_numero;
         $obj->person = 3;
         $obj->is_opening = true;
         $obj->is_vtmr = false;
         return $obj;
+    }
+
+    public function onAfterSuffixed(& $stem)
+    {
+        $stem->is_opening = true;
+        $this->numero = $stem->numero;
     }
 
 }
@@ -525,51 +668,59 @@ class Verbum extends Wordform
 {
 }
 
-class Nomen extends Wordform implements NominalCases, VirtualNominalCases
+interface iPossessable
+{
+    public function isJaje();
+}
+
+class Nomen extends Wordform implements iPossessable, NominalCases, VirtualNominalCases
 {
 
     public $case = 'Nominativus';
     public $numero = 1;
-    public $person = 3;
 
     public $is_jaje = NULL;
     public $lemma2 = '';
+
+    public function __construct($lemma, $ortho=NULL)
+    {
+        parent::__construct($lemma, $ortho);
+        $this->lemma2 = $lemma;
+    }
 
     /** Hint.
      */
     public function isJaje()
     {
         if (!is_null($this->is_jaje))
-            return $this->is_jaje; // már adott
-        if (Phonology::isVowel(mb_substr($this->ortho, -1, 1)))
+        {
+            return $this->is_jaje; // már adott lexikonban
+        }
+        if ($this->isLastVowel())
+        {
             return true; // mindig
+        }
         if (preg_match('/(s|sz|z|zs|c|cs|dzs|gy|j|ny|ty|tor|ter|er|um)$/', $this->ortho))
+        {
             return false; // általában
+        }
         if (preg_match('/[bcdfghjklmnprstvxz]{2,}$/', $this->ortho))
+        {
             return true; // általában
-        return false; // unknown
+        }
+        return false; // egyébként általában nem
     }
 
-    /** Nomen is volatile only if not yet inflexed.
+    /** Nomen is alternating only if not yet inflexed.
      */
-    public function isVolatile()
+    public function isAlternating()
     {
-        return $this->is_volatile && ($this->lemma === $this->ortho);
+        return $this->is_alternating && ($this->lemma === $this->ortho);
     }
 
     public function isAMNYRight()
     {
         return false;
-    }
-
-    public function & appendSuffix($suffix)
-    {
-        $clone = parent::appendSuffix($suffix);
-        if ($suffix->ortho === 'sÁg')
-            $clone->is_jaje = false;
-        if ($suffix instanceof PossessiveSuffixum)
-            $clone->is_opening = true;
-        return $clone;
     }
 
     public function & makePlural()
@@ -596,7 +747,10 @@ class Nomen extends Wordform implements NominalCases, VirtualNominalCases
 
     public function & _makeCaseFromNominativusWithSuffix($case, & $suffix)
     {
-        $clone = $this->makeNominativus()->appendSuffix($suffix);
+        if ($this->isNominativus())
+            $clone = $this->appendSuffix($suffix);
+        else
+            $clone = $this->makeNominativus()->appendSuffix($suffix);
         $clone->case = $case;
         return $clone;
     }
@@ -617,12 +771,8 @@ class Nomen extends Wordform implements NominalCases, VirtualNominalCases
 
     public function & makeNominativus()
     {
-        //$clone = new Nomen($this->lemma);
-        //$clone->vow = $this->vow;
-        //$clone->is_vtmr = $this->is_vtmr;
-        //$clone->is_opening = $this->is_opening;
-        // @todo copy other fields?
         $clone = clone $this;
+        $clone->case = 'Nominativus';
         if ($this->isPlural())
             $clone = $clone->makePlural();
         return $clone;
@@ -633,6 +783,7 @@ class Nomen extends Wordform implements NominalCases, VirtualNominalCases
         $clone = & $this->makeNominativus()->appendSuffix(GFactory::parseSuffixum('_Vt'));
         $clone->case = 'Accusativus';
         return $clone;
+        return $this->_makeCaseFromNominativusWithSuffix('Accusativus', GFactory::parseSuffixum('_Vt'));
     }
 
     public function & makeCausalisFinalis()
@@ -717,26 +868,23 @@ class Nomen extends Wordform implements NominalCases, VirtualNominalCases
 
     // helpers {{{
 
-    public function & _makeCaseWithNU($case, $lemma)
+    public function & _makeCaseWithNU($case, & $head)
     {
-        $clone = $this->makeNominativus();
-        $ADVP = new ADVP_NU($lemma, $clone);
+        $ADVP = new ADVP_NU($head, $this->makeNominativus());
         $ADVP->case = $case;
         return $ADVP;
     }
 
-    public function & _makeCaseWithHRHSZ($case, $lemma, $suffix)
+    public function & _makeCaseWithHRHSZ($case, & $head, & $suffix)
     {
-        $clone = $this->makeNominativus();
-        $ADVP = new ADVP_HRHSZ($lemma, $clone, $suffix);
+        $ADVP = new ADVP_HRHSZ($head, $this->makeNominativus(), $suffix);
         $ADVP->case = $case;
         return $ADVP;
     }
 
-    public function & _makeCaseWithHNHSZ($case, $lemma)
+    public function & _makeCaseWithHNHSZ($case, & $head)
     {
-        $clone = $this->makeNominativus();
-        $ADVP = new ADVP_HNHSZ($lemma, $clone);
+        $ADVP = new ADVP_HNHSZ($head, $this->makeNominativus());
         $ADVP->case = $case;
         return $ADVP;
     }
@@ -752,19 +900,19 @@ class Nomen extends Wordform implements NominalCases, VirtualNominalCases
 
     public function & makeCausalis()
     {
-        return $this->_makeCaseWithNU('Causalis', 'miatt');
+        return $this->_makeCaseWithNU('Causalis', GFactory::parseNP('miatt'));
     }
 
     // @skip public function & makeExessivus();
 
     public function & makePerlativus()
     {
-        return $this->_makeCaseWithHRHSZ('Perlativus', 'keresztül', 'On');
+        return $this->_makeCaseWithHRHSZ('Perlativus', GFactory::parseNP('keresztül'), GFactory::parseSuffixum('On'));
     }
 
     public function & makeProlativus()
     {
-        return $this->_makeCaseWithHRHSZ('Perlativus', 'át', 'On');
+        return $this->_makeCaseWithHRHSZ('Perlativus', GFactory::parseNP('át'), GFactory::parseSuffixum('On'));
     }
 
     public function & makeVialis()
@@ -774,12 +922,12 @@ class Nomen extends Wordform implements NominalCases, VirtualNominalCases
 
     public function & makeSubessivus()
     {
-        return $this->_makeCaseWithNU('Perlativus', 'alatt');
+        return $this->_makeCaseWithNU('Perlativus', GFactory::parseNP('alatt'));
     }
 
     public function & makeProsecutivus()
     {
-        return $this->_makeCaseWithHNHSZ('Prosecutivus', 'mentén');
+        return $this->_makeCaseWithHNHSZ('Prosecutivus', GFactory::parseNP('mentén'));
     }
 
     //public function & makeApudessivus();
@@ -787,14 +935,78 @@ class Nomen extends Wordform implements NominalCases, VirtualNominalCases
     //public function & makeEgressivus();
 
     //public function & makeAntessivus();
-    //public function & makeTemporalis();
+    public function & makeTemporalis()
+    {
+        return $this->_makeCaseFromNominativusWithSuffix('Temporalis', GFactory::parseSuffixum('kor'));
+    }
 
     // }}}
 
 }
 
+abstract class HeadedExpression
+{
+    public $case = NULL;
+    public $head = NULL;
+    public $arg = NULL;
+
+    public function __construct(& $head, & $arg)
+    {
+        $this->head = & $head;
+        $this->arg = & $arg;
+    }
+
+    public function & pronominalize()
+    {
+        throw new Exception();
+    }
+
+}
+
+class ADVP_NU extends HeadedExpression
+{
+
+    public function __toString()
+    {
+        return (string) $this->arg . ' ' . $this->head;
+    }
+
+    public function & pronominalize()
+    {
+        return $this->head->appendSuffix(PossessiveSuffixum::makeNumPers($this->arg->numero, 3));
+    }
+
+}
+
+class ADVP_HRHSZ extends HeadedExpression
+{
+    public $suffix = NULL;
+
+    public function __construct(& $head, & $arg, & $suffix)
+    {
+        parent::__construct($head, $arg);
+        $this->suffix = & $suffix;
+    }
+
+    public function __toString()
+    {
+        return $this->arg->appendSuffix($this->suffix) . ' ' . $this->head;
+    }
+
+}
+
+class ADVP_HNHSZ extends HeadedExpression
+{
+
+    public function __toString()
+    {
+        return (string) $this->arg . ' ' . $this->head;
+    }
+
+}
+
 /*
- * Képzők
+ * @todo Képzők
  *
  * N -> N
  * (V)s s os as es ös
@@ -833,101 +1045,6 @@ class Nomen extends Wordform implements NominalCases, VirtualNominalCases
  * ...
  */
 
-class ADVP_NU
-{
-    public $lemma = '';
-    public $vow = ''; // @todo factor out this->base = new Wordform()
-    public $arg = NULL;
-    public $case = '';
-
-    public function __construct($lemma, & $arg)
-    {
-        $this->lemma = $lemma;
-        $this->arg = & $arg;
-        $this->vow = Phonology::getVow($lemma);
-    }
-
-    public function __toString()
-    {
-        return (string) $this->arg . ' ' . $this->lemma;
-    }
-
-    public function & pronominalize()
-    {
-        $map = array(
-            'low' => array(
-                1 => array(1 => 'am', 2 => 'ad', 3 => 'a',),
-                3 => array(1 => 'unk', 2 => 'atok', 3 => 'uk',),
-            ),
-            'high' => array(
-                1 => array(1 => 'em', 2 => 'ed', 3 => 'e',),
-                3 => array(1 => 'ünk', 2 => 'etek', 3 => 'ük',),
-            ),
-        );
-        $vow = $this->vow;
-        $numero = $this->arg->numero;
-        $person = $this->arg->person;
-        $suffix = $map[$vow][$numero][$person];
-        return new Wordform($this->lemma, $this->lemma.$suffix);
-    }
-
-}
-
-class ADVP_HRHSZ
-{
-    public $lemma = '';
-    public $vow = ''; // @todo factor out this->base = new Wordform()
-    public $arg = NULL;
-    public $case = '';
-    public $suffixcode;
-
-    public function __construct($lemma, & $arg, $suffixcode)
-    {
-        $this->lemma = $lemma;
-        $this->arg = & $arg;
-        $this->suffixcode = $suffixcode;
-        $this->vow = Phonology::getVow($lemma);
-    }
-
-    public function __toString()
-    {
-        $arg = $this->arg->appendSuffix(GFactory::parseSuffixum($this->suffixcode));
-        return (string) $arg . ' ' . $this->lemma;
-    }
-
-    public function & pronominalize()
-    {
-        throw new Exception();
-    }
-
-}
-
-class ADVP_HNHSZ
-{
-    public $lemma = '';
-    public $vow = ''; // @todo factor out this->base = new Wordform()
-    public $arg = NULL;
-    public $case = '';
-
-    public function __construct($lemma, & $arg)
-    {
-        $this->lemma = $lemma;
-        $this->arg = & $arg;
-        $this->vow = Phonology::getVow($lemma);
-    }
-
-    public function __toString()
-    {
-        return (string) $this->arg . ' ' . $this->lemma;
-    }
-
-    public function & pronominalize()
-    {
-        throw new Exception();
-    }
-
-}
-
 class GFactory
 {
 
@@ -940,7 +1057,7 @@ class GFactory
         'ló',
         'kéz', 'réz', 'mész', 'ész', 'szén', 'név', 'légy', 'ég', 'jég', 'hét', 'tér', 'dér', 'ér', 'bél', 'nyél', 'fél', 'szél', 'dél', 'tél', 'lé',
         'nyár', 'sár',
-        // @todo A kéttagúak első mghja mindig rövid - egyszerűen az egész alakot lehet rövidíteni.
+        // A kéttagúak első mghja mindig rövid - egyszerűen az egész alakot lehet rövidíteni.
         'egér', 'szekér', 'tenyér', 'kenyér', 'levél', 'fedél', 'fenék', 'kerék', 'cserép', 'szemét', 'elég', 'veréb', 'nehéz', 'tehén', 'derék',
         'gyökér', 'kötél', 'közép',
         'fazék',
@@ -950,7 +1067,7 @@ class GFactory
     );
 
     // @todo tő és toldalék elkülönítése: mít|osz, ennek konstruálásakor legyen lemma=mít, és legyen a "nominális toldalék" osz, képzéskor pedig nem a nominálisból, hanem a lemmából képezzünk. (?)
-    // @todo not full list
+    // not full list
     public static $N_btmr_list = array(
         'aktív', 'vízió', 'miniatűr', 'úr', 'fúzió', 'téma', 'szláv', 'privát',
         'náció', 'analízis', 'mítosz', 'motívum', 'stílus',
@@ -960,15 +1077,25 @@ class GFactory
         'elegáns',
     );
 
-    // @todo not full list
+    // not full list
     // not opening e.g.: gáz bűz rés
     public static $N_opening_list = array('út', 'nyár', 'ház', 'tűz', 'víz', 'föld', 'zöld', 'nyúl', 'híd', 'nyíl', 'bátor', 'ajak', 'kazal', 'ló', 'hó', 'fű', 'hazai', );
 
-    // @todo not full list
-    public static $N_jaje_list = array('nagy', 'pad', 'sárkány', 'kupec', 'kortes', 'macesz', 'trapéz', );
+    // not full list
+    public static $N_jaje = array(
+        'nagy' => true,
+        'pad' => true,
+        'sárkány' => true,
+        'kupec' => true,
+        'kortes' => true,
+        'macesz' => true,
+        'trapéz' => true,
+        'rassz' => true,
+        'miatt' => false,
+    );
 
-    // @todo is full list? latin/english name?
-    public static $N_volatile_list = array(
+    // is full list? latin/english name?
+    public static $N_alternating_list = array(
         'ajak' => 'ajk',
         'bagoly' => 'bagly',
         'bajusz' => 'bajsz',
@@ -986,19 +1113,25 @@ class GFactory
         'tülök' => 'tülk',
         'vacak' => 'vack',
         'álom' => 'álm',
-        // @todo v-vel bővülő tövek, nem teljes lista
+        // v-vel bővülő tövek, nem teljes lista
         'ló' => 'lov',
         'fű' => 'füv',
         'hó' => 'hav',
-        // @todo hangátvetéses váltakozás, nem teljes lista
+        // hangátvetéses váltakozás, nem teljes lista
         'teher' => 'terh',
         'pehely' => 'pelyh',
         'kehely' => 'kelyh',
-        // @todo volatile verbs
+        // @todo alternating verbs
         //'szerez' => 'szerző',
         //'töröl' => 'törlő',
         //'becsül' => 'becsl',
         //'őriz' => 'őrz',
+    );
+
+    public static $needSuffixI = array(
+        'híd' => false,
+        'nyíl' => false,
+        'oxigén' => true,
     );
 
     public static function parseNP($string)
@@ -1007,15 +1140,17 @@ class GFactory
         $obj->is_vtmr = in_array($string, self::$N_vtmr_list, true);
         $obj->is_btmr = in_array($string, self::$N_btmr_list, true);
         $obj->is_opening = in_array($string, self::$N_opening_list, true);
-        if (in_array($string, self::$N_jaje_list, true))
-            $obj->is_jaje = true;
-        $obj->is_volatile = isset(self::$N_volatile_list[$string]);
-        if ($obj->is_volatile)
-            $obj->lemma2 = self::$N_volatile_list[$string];
+        if (isset(self::$N_jaje[$string]))
+            $obj->is_jaje = self::$N_jaje[$string];
+        if (isset(self::$needSuffixI[$string]))
+            $obj->needSuffixI = self::$needSuffixI[$string];
+        $obj->is_alternating = isset(self::$N_alternating_list[$string]);
+        if ($obj->is_alternating)
+            $obj->lemma2 = self::$N_alternating_list[$string];
         return $obj;
     }
 
-    // @todo not full list
+    // not full list
     public static $suffixum_vtmr_list = array(
         '_Vk', // többesjel
         '_Vt', // tárgyrag
@@ -1025,7 +1160,7 @@ class GFactory
         '_VcskA', // kicsinyítő képző
     );
 
-    // @todo not full list
+    // not full list
     public static $suffixum_btmr_list = array(
         'ista',
         'izál',
@@ -1038,7 +1173,7 @@ class GFactory
         'nál', // ? fuzionál
     );
 
-    // @todo is full list?
+    // is full list?
     public static $suffixum_opening_list = array(
         '_Vk', // többesjel
         // birtokos személyjelek
@@ -1047,14 +1182,13 @@ class GFactory
         // felszólító j 
     );
 
-    // @todo test
     public static $suffixum_not_AMNY_right_list = array(
-        'kor', 'ista', 'izmus', // stb., átlátszatlan toldalékok @todo
+        'kor', 'ista', 'izmus', // stb. átlátszatlan toldalékok
         'szOr', 'sÁg', 'i', 'ként',
     );
 
-    // @todo is full list? latin/english name?
-    public static $suffixum_volatile_list = array(
+    // is full list? latin/english name?
+    public static $suffixum_alternating_list = array(
         '_Vt', // tárgyrag
         'On', // Superessivus
         '_Vk', // többesjel
@@ -1065,6 +1199,13 @@ class GFactory
         '_VcskA', // kicsinyítő képző
     );
 
+    public static $suffixum_classes = array(
+        'Ás' => array('Verbum', 'Nomen'),
+        'Ul' => array('Nomen', 'Verbum'),
+    );
+
+    public static $suffixum_stop_jaje_list = array('sÁg');
+
     public static function parseSuffixum($string)
     {
         $obj = new Suffixum($string);
@@ -1072,7 +1213,18 @@ class GFactory
         $obj->is_btmr = in_array($string, self::$suffixum_btmr_list, true);
         $obj->is_opening = in_array($string, self::$suffixum_opening_list, true);
         $obj->is_amny = !in_array($string, self::$suffixum_not_AMNY_right_list);
-        $obj->is_volatile = in_array($string, self::$suffixum_volatile_list);
+        $obj->is_alternating = in_array($string, self::$suffixum_alternating_list);
+        $obj->stop_jaje = in_array($string, self::$suffixum_stop_jaje_list, true);
+
+        if (isset(self::$suffixum_classes[$string]))
+            list($input_class, $output_class) = self::$suffixum_classes[$string];
+        else
+        {
+            $input_class = 'Nomen';
+            $output_class = 'Nomen';
+        }
+        $obj->input_class = $input_class;
+        $obj->output_class = $output_class;
         return $obj;
     }
 
