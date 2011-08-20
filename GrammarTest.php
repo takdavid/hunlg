@@ -50,83 +50,120 @@ class EmberTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('privatizál', (string) GFactory::parseNP('privát')->appendSuffix(GFactory::parseSuffixum('izál')));
     }
 
-    public function testBirtokos()
+    public function testPossessive()
     {
         unset($N);
         $N = GFactory::parseNP('barnulás');
-        $this->assertEquals('barnulásom',   (string) $N->appendSuffix(BirtokosSuffixum::makePersNum(1, 1)));
-        $this->assertEquals('barnulásod',   (string) $N->appendSuffix(BirtokosSuffixum::makePersNum(1, 2)));
-        $this->assertEquals('barnulása',    (string) $N->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('barnulásunk',  (string) $N->appendSuffix(BirtokosSuffixum::makePersNum(3, 1)));
-        $this->assertEquals('barnulásotok', (string) $N->appendSuffix(BirtokosSuffixum::makePersNum(3, 2)));
-        $this->assertEquals('barnulásuk',   (string) $N->appendSuffix(BirtokosSuffixum::makePersNum(3, 3)));
+        $this->assertEquals('barnulásom',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1)));
+        $this->assertEquals('barnulásod',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 2)));
+        $this->assertEquals('barnulása',    (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('barnulásunk',  (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 1)));
+        $this->assertEquals('barnulásotok', (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2)));
+        $this->assertEquals('barnulásuk',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 3)));
 
         unset($N);
         $N = GFactory::parseNP('pad');
-        $this->assertEquals('padom',   (string) $N->appendSuffix(BirtokosSuffixum::makePersNum(1, 1)));
-        $this->assertEquals('padod',   (string) $N->appendSuffix(BirtokosSuffixum::makePersNum(1, 2)));
-        $this->assertEquals('padja',   (string) $N->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('padunk',  (string) $N->appendSuffix(BirtokosSuffixum::makePersNum(3, 1)));
-        $this->assertEquals('padotok', (string) $N->appendSuffix(BirtokosSuffixum::makePersNum(3, 2)));
-        $this->assertEquals('padjuk',  (string) $N->appendSuffix(BirtokosSuffixum::makePersNum(3, 3)));
+        $this->assertEquals('padom',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1)));
+        $this->assertEquals('padod',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 2)));
+        $this->assertEquals('padja',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('padunk',  (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 1)));
+        $this->assertEquals('padotok', (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2)));
+        $this->assertEquals('padjuk',  (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 3)));
 
-        $this->assertEquals('ladája',   (string) GFactory::parseNP('lada')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('ládája',   (string) GFactory::parseNP('láda')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('ládánk',   (string) GFactory::parseNP('láda')->appendSuffix(BirtokosSuffixum::makePersNum(3, 1)));
-        $this->assertEquals('bikája',   (string) GFactory::parseNP('bika')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('bikánk',   (string) GFactory::parseNP('bika')->appendSuffix(BirtokosSuffixum::makePersNum(3, 1)));
+        $this->assertEquals('ladája',   (string) GFactory::parseNP('lada')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('ládája',   (string) GFactory::parseNP('láda')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('ládánk',   (string) GFactory::parseNP('láda')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 1)));
+        $this->assertEquals('bikája',   (string) GFactory::parseNP('bika')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('bikánk',   (string) GFactory::parseNP('bika')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 1)));
 
-        $this->assertEquals('királya',   (string) GFactory::parseNP('király')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('olaja',   (string) GFactory::parseNP('olaj')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('báránya',   (string) GFactory::parseNP('bárány')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('sasa',   (string) GFactory::parseNP('sas')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('perece',   (string) GFactory::parseNP('perec')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
+        $this->assertEquals('királya',   (string) GFactory::parseNP('király')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('olaja',   (string) GFactory::parseNP('olaj')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('báránya',   (string) GFactory::parseNP('bárány')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('sasa',   (string) GFactory::parseNP('sas')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('perece',   (string) GFactory::parseNP('perec')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
 
-        $this->assertEquals('nagyja',   (string) GFactory::parseNP('nagy')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('sárkányja',   (string) GFactory::parseNP('sárkány')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('kupecje',   (string) GFactory::parseNP('kupec')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('kortesje',   (string) GFactory::parseNP('kortes')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('maceszje',   (string) GFactory::parseNP('macesz')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('trapézja',   (string) GFactory::parseNP('trapéz')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
+        $this->assertEquals('nagyja',   (string) GFactory::parseNP('nagy')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('sárkányja',   (string) GFactory::parseNP('sárkány')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('kupecje',   (string) GFactory::parseNP('kupec')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('kortesje',   (string) GFactory::parseNP('kortes')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('maceszje',   (string) GFactory::parseNP('macesz')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('trapézja',   (string) GFactory::parseNP('trapéz')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
 
-        $this->assertEquals('padja',   (string) GFactory::parseNP('pad')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('embere',   (string) GFactory::parseNP('ember')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
+        $this->assertEquals('padja',   (string) GFactory::parseNP('pad')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('embere',   (string) GFactory::parseNP('ember')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
 
-        $this->assertEquals('szenátora',   (string) GFactory::parseNP('szenátor')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('minisztere',   (string) GFactory::parseNP('miniszter')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('slágere',   (string) GFactory::parseNP('sláger')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('jubileuma',   (string) GFactory::parseNP('jubileum')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
+        $this->assertEquals('szenátora',   (string) GFactory::parseNP('szenátor')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('minisztere',   (string) GFactory::parseNP('miniszter')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('slágere',   (string) GFactory::parseNP('sláger')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('jubileuma',   (string) GFactory::parseNP('jubileum')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
 
         $this->assertTrue(GFactory::parseNP('kert')->isJaje());
-        $this->assertEquals('galambja',   (string) GFactory::parseNP('galamb')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('kertje',   (string) GFactory::parseNP('kert')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('barackja',   (string) GFactory::parseNP('barack')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('csontja',   (string) GFactory::parseNP('csont')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('fánkja',   (string) GFactory::parseNP('fánk')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('gondja',   (string) GFactory::parseNP('gond')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('futballja',   (string) GFactory::parseNP('futball')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('címzettje',   (string) GFactory::parseNP('címzett')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('sakkja',   (string) GFactory::parseNP('sakk')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('cseppje',   (string) GFactory::parseNP('csepp')->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
+        $this->assertEquals('galambja',   (string) GFactory::parseNP('galamb')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('kertje',   (string) GFactory::parseNP('kert')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('barackja',   (string) GFactory::parseNP('barack')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('csontja',   (string) GFactory::parseNP('csont')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('fánkja',   (string) GFactory::parseNP('fánk')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('gondja',   (string) GFactory::parseNP('gond')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('futballja',   (string) GFactory::parseNP('futball')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('címzettje',   (string) GFactory::parseNP('címzett')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('sakkja',   (string) GFactory::parseNP('sakk')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('cseppje',   (string) GFactory::parseNP('csepp')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
 
         unset($N);
         $N = GFactory::parseNP('vér');
-        $this->assertEquals('vérem',   (string) $N->appendSuffix(BirtokosSuffixum::makePersNum(1, 1)));
-        $this->assertEquals('véred',   (string) $N->appendSuffix(BirtokosSuffixum::makePersNum(1, 2)));
-        $this->assertEquals('vére',    (string) $N->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('vérünk',  (string) $N->appendSuffix(BirtokosSuffixum::makePersNum(3, 1)));
-        $this->assertEquals('véretek', (string) $N->appendSuffix(BirtokosSuffixum::makePersNum(3, 2)));
-        $this->assertEquals('vérük',   (string) $N->appendSuffix(BirtokosSuffixum::makePersNum(3, 3)));
+        $this->assertEquals('vérem',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1)));
+        $this->assertEquals('véred',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 2)));
+        $this->assertEquals('vére',    (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('vérünk',  (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 1)));
+        $this->assertEquals('véretek', (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2)));
+        $this->assertEquals('vérük',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 3)));
+
+        $this->assertEquals('véreim',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1, 3)));
+        $this->assertEquals('véreid',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 2, 3)));
+        $this->assertEquals('vérei',    (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3, 3)));
+        $this->assertEquals('véreink',  (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 1, 3)));
+        $this->assertEquals('véreitek', (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2, 3)));
+        $this->assertEquals('véreik',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 3, 3)));
 
         unset($N);
         $N = GFactory::parseNP('ős');
-        $this->assertEquals('ősöm',   (string) $N->appendSuffix(BirtokosSuffixum::makePersNum(1, 1)));
-        $this->assertEquals('ősöd',   (string) $N->appendSuffix(BirtokosSuffixum::makePersNum(1, 2)));
-        $this->assertEquals('őse',    (string) $N->appendSuffix(BirtokosSuffixum::makePersNum(1, 3)));
-        $this->assertEquals('ősünk',  (string) $N->appendSuffix(BirtokosSuffixum::makePersNum(3, 1)));
-        $this->assertEquals('ősötök', (string) $N->appendSuffix(BirtokosSuffixum::makePersNum(3, 2)));
-        $this->assertEquals('ősük',   (string) $N->appendSuffix(BirtokosSuffixum::makePersNum(3, 3)));
+        $this->assertEquals('ősöm',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1)));
+        $this->assertEquals('ősöd',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 2)));
+        $this->assertEquals('őse',    (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('ősünk',  (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 1)));
+        $this->assertEquals('ősötök', (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2)));
+        $this->assertEquals('ősük',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 3)));
 
+        $this->assertEquals('őseim',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1, 3)));
+        $this->assertEquals('őseid',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 2, 3)));
+        $this->assertEquals('ősei',    (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3, 3)));
+        $this->assertEquals('őseink',  (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 1, 3)));
+        $this->assertEquals('őseitek', (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2, 3)));
+        $this->assertEquals('őseik',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 3, 3)));
+
+        unset($N);
+        $N = GFactory::parseNP('ház');
+        $this->assertEquals('házaim',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1, 3)));
+        $this->assertEquals('házaid',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 2, 3)));
+        $this->assertEquals('házai',    (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3, 3)));
+        $this->assertEquals('házaink',  (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 1, 3)));
+        $this->assertEquals('házaitok', (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2, 3)));
+        $this->assertEquals('házaik',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(3, 3, 3)));
+    }
+
+    public function testPossessor()
+    {
+        unset($N);
+        $N = GFactory::parseNP('ős');
+        $this->assertEquals('őseimé',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1, 3))->appendSuffix(PossessiveSuffixum::makePossessor(1)));
+        $this->assertEquals('őseidéi',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 2, 3))->appendSuffix(PossessiveSuffixum::makePossessor(3)));
+        $this->assertEquals('őseiéiről',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3, 3))->appendSuffix(PossessiveSuffixum::makePossessor(3))->makeDelativus());
+
+        unset($N);
+        $N = GFactory::parseNP('ház');
+        $this->assertEquals('házaimé',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1, 3))->appendSuffix(PossessiveSuffixum::makePossessor(1)));
+        $this->assertEquals('házaiméi',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1, 3))->appendSuffix(PossessiveSuffixum::makePossessor(3)));
+        $this->assertEquals('házaiméiról',   (string) $N->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1, 3))->appendSuffix(PossessiveSuffixum::makePossessor(3))->makeDelativus());
     }
 
     public function testVow()
@@ -140,50 +177,50 @@ class EmberTest extends PHPUnit_Framework_TestCase
     public function testPhonology()
     {
         $this->assertEquals('emberke', (string) GFactory::parseNP('ember')->appendSuffix(GFactory::parseSuffixum('kA')));
-        $this->assertEquals('barnulásotoktól', (string) GFactory::parseV('barnul')->appendSuffix(GFactory::parseSuffixum('Ás'))->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('tÓl')));
+        $this->assertEquals('barnulásotoktól', (string) GFactory::parseV('barnul')->appendSuffix(GFactory::parseSuffixum('Ás'))->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('tÓl')));
         $this->assertTrue(GFactory::parseV('zöldül')->isOpening());
         $this->assertTrue(GFactory::parseV('zöldül')->appendSuffix(GFactory::parseSuffixum('Ás'))->isOpening());
-        $this->assertTrue(GFactory::parseV('zöldül')->appendSuffix(GFactory::parseSuffixum('Ás'))->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->isOpening());
-        $this->assertEquals('zöldülésetek', (string) GFactory::parseV('zöldül')->appendSuffix(GFactory::parseSuffixum('Ás'))->appendSuffix(BirtokosSuffixum::makePersNum(3, 2)));
-        $this->assertEquals('zöldülésetektől', (string) GFactory::parseV('zöldül')->appendSuffix(GFactory::parseSuffixum('Ás'))->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('tÓl')));
+        $this->assertTrue(GFactory::parseV('zöldül')->appendSuffix(GFactory::parseSuffixum('Ás'))->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->isOpening());
+        $this->assertEquals('zöldülésetek', (string) GFactory::parseV('zöldül')->appendSuffix(GFactory::parseSuffixum('Ás'))->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2)));
+        $this->assertEquals('zöldülésetektől', (string) GFactory::parseV('zöldül')->appendSuffix(GFactory::parseSuffixum('Ás'))->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('tÓl')));
         // @todo ld. 309. o.
         $this->assertEquals('kékülés',  (string) GFactory::parseV('kékül')->appendSuffix(GFactory::parseSuffixum('Ás')));
-        $this->assertEquals('kékülésetek',  (string) GFactory::parseNP('kék')->appendSuffix(GFactory::parseSuffixum('Ul'))->appendSuffix(GFactory::parseSuffixum('Ás'))->appendSuffix(BirtokosSuffixum::makePersNum(3, 2)));
-        $this->assertEquals('kékülésetektől',  (string) GFactory::parseNP('kék')->appendSuffix(GFactory::parseSuffixum('Ul'))->appendSuffix(GFactory::parseSuffixum('Ás'))->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('tÓl')));
-        $this->assertEquals('kéketeket', (string) GFactory::parseNP('kék')->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
-        $this->assertEquals('tökötöket', (string) GFactory::parseNP('tök')->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
-        $this->assertEquals('tökünkhöz', (string) GFactory::parseNP('tök')->appendSuffix(BirtokosSuffixum::makePersNum(3, 1))->appendSuffix(GFactory::parseSuffixum('hOz')));
-        $this->assertEquals('vizünkhöz', (string) GFactory::parseNP('víz')->appendSuffix(BirtokosSuffixum::makePersNum(3, 1))->appendSuffix(GFactory::parseSuffixum('hOz')));
-        $this->assertEquals('tüzeteket', (string) GFactory::parseNP('tűz')->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
-        $this->assertEquals('sorfőrötöket', (string) GFactory::parseNP('sorfőr')->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
-        $this->assertEquals('nyulatokat', (string) GFactory::parseNP('nyúl')->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
-        $this->assertEquals('házatokat', (string) GFactory::parseNP('ház')->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
-        $this->assertEquals('vizeteket', (string) GFactory::parseNP('víz')->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
+        $this->assertEquals('kékülésetek',  (string) GFactory::parseNP('kék')->appendSuffix(GFactory::parseSuffixum('Ul'))->appendSuffix(GFactory::parseSuffixum('Ás'))->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2)));
+        $this->assertEquals('kékülésetektől',  (string) GFactory::parseNP('kék')->appendSuffix(GFactory::parseSuffixum('Ul'))->appendSuffix(GFactory::parseSuffixum('Ás'))->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('tÓl')));
+        $this->assertEquals('kéketeket', (string) GFactory::parseNP('kék')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
+        $this->assertEquals('tökötöket', (string) GFactory::parseNP('tök')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
+        $this->assertEquals('tökünkhöz', (string) GFactory::parseNP('tök')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 1))->appendSuffix(GFactory::parseSuffixum('hOz')));
+        $this->assertEquals('vizünkhöz', (string) GFactory::parseNP('víz')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 1))->appendSuffix(GFactory::parseSuffixum('hOz')));
+        $this->assertEquals('tüzeteket', (string) GFactory::parseNP('tűz')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
+        $this->assertEquals('sorfőrötöket', (string) GFactory::parseNP('sorfőr')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
+        $this->assertEquals('nyulatokat', (string) GFactory::parseNP('nyúl')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
+        $this->assertEquals('házatokat', (string) GFactory::parseNP('ház')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
+        $this->assertEquals('vizeteket', (string) GFactory::parseNP('víz')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
         $this->assertEquals('hidak', (string) GFactory::parseNP('híd')->appendSuffix(GFactory::parseSuffixum('_Vk')));
         $this->assertEquals('hidat', (string) GFactory::parseNP('híd')->appendSuffix(GFactory::parseSuffixum('_Vt')));
-        $this->assertEquals('hidatokat', (string) GFactory::parseNP('híd')->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
+        $this->assertEquals('hidatokat', (string) GFactory::parseNP('híd')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
         $this->assertEquals('nyilakat', (string) GFactory::parseNP('nyíl')->appendSuffix(GFactory::parseSuffixum('_Vk'))->appendSuffix(GFactory::parseSuffixum('_Vt')));
-        $this->assertEquals('nyilatokat', (string) GFactory::parseNP('nyíl')->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
-        $this->assertEquals('papírotokat', (string) GFactory::parseNP('papír')->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
-        $this->assertEquals('októbereteket', (string) GFactory::parseNP('október')->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
-        $this->assertEquals('tányérotokat', (string) GFactory::parseNP('tányér')->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
-        //$this->assertEquals('hotelotokat', (string) GFactory::parseNP('hotel')->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
-        $this->assertEquals('hoteleteket', (string) GFactory::parseNP('hotel')->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
-        $this->assertEquals('üvegeteket', (string) GFactory::parseNP('üveg')->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
-        $this->assertEquals('rövideteket', (string) GFactory::parseNP('rövid')->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
-        $this->assertEquals('szegényeteket', (string) GFactory::parseNP('szegény')->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
-        $this->assertEquals('matinétokat', (string) GFactory::parseNP('matiné')->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
-        //$this->assertEquals('matinéteket', (string) GFactory::parseNP('matiné')->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
+        $this->assertEquals('nyilatokat', (string) GFactory::parseNP('nyíl')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
+        $this->assertEquals('papírotokat', (string) GFactory::parseNP('papír')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
+        $this->assertEquals('októbereteket', (string) GFactory::parseNP('október')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
+        $this->assertEquals('tányérotokat', (string) GFactory::parseNP('tányér')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
+        //$this->assertEquals('hotelotokat', (string) GFactory::parseNP('hotel')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
+        $this->assertEquals('hoteleteket', (string) GFactory::parseNP('hotel')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
+        $this->assertEquals('üvegeteket', (string) GFactory::parseNP('üveg')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
+        $this->assertEquals('rövideteket', (string) GFactory::parseNP('rövid')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
+        $this->assertEquals('szegényeteket', (string) GFactory::parseNP('szegény')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
+        $this->assertEquals('matinétokat', (string) GFactory::parseNP('matiné')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
+        //$this->assertEquals('matinéteket', (string) GFactory::parseNP('matiné')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
         $this->assertEquals('oxigének', (string) GFactory::parseNP('oxigén')->makePlural());
         $this->assertEquals('oxigént', (string) GFactory::parseNP('oxigén')->appendSuffix(GFactory::parseSuffixum('_Vt')));
         $this->assertEquals('oxigéneket', (string) GFactory::parseNP('oxigén')->makePlural()->appendSuffix(GFactory::parseSuffixum('_Vt')));
-        $this->assertEquals('oxigéneteket', (string) GFactory::parseNP('oxigén')->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
-        //$this->assertEquals('agresszívotokat', (string) GFactory::parseNP('agresszív')->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
-        $this->assertEquals('agresszíveteket', (string) GFactory::parseNP('agresszív')->appendSuffix(BirtokosSuffixum::makePersNum(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
+        $this->assertEquals('oxigéneteket', (string) GFactory::parseNP('oxigén')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
+        //$this->assertEquals('agresszívotokat', (string) GFactory::parseNP('agresszív')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
+        $this->assertEquals('agresszíveteket', (string) GFactory::parseNP('agresszív')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('_Vt')));
 
-        $this->assertEquals('házunk', (string) GFactory::parseNP('ház')->appendSuffix(BirtokosSuffixum::makePersNum(3, 1)));
-        $this->assertEquals('tüzünk', (string) GFactory::parseNP('tűz')->appendSuffix(BirtokosSuffixum::makePersNum(3, 1)));
-        $this->assertEquals('vizünk', (string) GFactory::parseNP('viz')->appendSuffix(BirtokosSuffixum::makePersNum(3, 1)));
+        $this->assertEquals('házunk', (string) GFactory::parseNP('ház')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 1)));
+        $this->assertEquals('tüzünk', (string) GFactory::parseNP('tűz')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 1)));
+        $this->assertEquals('vizünk', (string) GFactory::parseNP('viz')->appendSuffix(PossessiveSuffixum::makeNumPers(3, 1)));
     }
 
     public function testVowelHarmony()

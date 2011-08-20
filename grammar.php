@@ -160,8 +160,8 @@ class Phonology
 
     public static $vowelmaps = array(
         true => array(
-            '--' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'o', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'a', 'W' => 'a'),
-            'U-' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'o', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'a', 'W' => 'a'),
+            '--' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'o', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'a', 'W' => 'o'),
+            'U-' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'o', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'a', 'W' => 'o'),
             '-I' => array( 'A' => 'e', 'Á' => 'é', 'E' => 'e', 'O' => 'e', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'V' => 'e', 'W' => 'e'),
             'UI' => array( 'A' => 'e', 'Á' => 'é', 'E' => 'e', 'O' => 'ö', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'V' => 'e', 'W' => 'e'),
         ),
@@ -169,7 +169,7 @@ class Phonology
             '--' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'o', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'o', 'W' => 'o'),
             'U-' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'o', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'a', 'W' => 'o'),
             '-I' => array( 'A' => 'e', 'Á' => 'é', 'E' => 'e', 'O' => 'e', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'V' => 'e', 'W' => 'e'),
-            'UI' => array( 'A' => 'e', 'Á' => 'é', 'E' => 'ö', 'O' => 'ö', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'V' => 'ö', 'W' => 'ö'),
+            'UI' => array( 'A' => 'e', 'Á' => 'é', 'E' => 'ö', 'O' => 'ö', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'V' => 'ö', 'W' => 'e'),
         ),
     );
 
@@ -193,7 +193,7 @@ class Phonology
         if ($nomen->isAMNYLeft() && $suffix->isAMNYRight())
             $stem = self::doAMNY($nomen->ortho);
 
-        //if ($suffix instanceof BirtokosSuffixum)
+        //if ($suffix instanceof PossessiveSuffixum)
         ////    print 'nomen '.$nomen->ortho.' is '.get_class($nomen).' ';
 
         $is_opening = $nomen->isOpening();
@@ -218,7 +218,7 @@ class Phonology
         //print "stem=$stem ";
 
         // birtokos A/jA
-        if ($suffix instanceof BirtokosSuffixum && $suffix->person === 3 && $nomen instanceof Nomen && $nomen->isJaje())
+        if ($suffix instanceof PossessiveSuffixum && $suffix->person === 3 && $nomen instanceof Nomen && $nomen->isJaje())
             $_suffix = "j$_suffix";
 
         // kötőhang
@@ -229,7 +229,7 @@ class Phonology
             $suffix_stem = mb_substr($_suffix, 2);
             if ($nomen->isOpening())
                 $_suffix = $suffix_vowel.$suffix_stem;
-            elseif ($suffix instanceof BirtokosSuffixum && !self::isVowel(mb_substr($stem, -1, 1)))
+            elseif ($suffix instanceof PossessiveSuffixum && !self::isVowel(mb_substr($stem, -1, 1)))
                 $_suffix = $suffix_vowel.$suffix_stem;
             elseif (self::isValidSuffix($stem, $suffix_stem))
                 $_suffix = $suffix_stem;
@@ -437,32 +437,49 @@ interface VirtualTemporalCases
 
 interface PersNum
 {
-    public function & makePersNum($numero = 1, $person = 3);
+    public function & makeNumPers($numero = 1, $person = 3);
 }
 
 class Suffixum extends Wordform
 {
 }
 
-class BirtokosSuffixum extends Suffixum implements PersNum
+class PossessiveSuffixum extends Suffixum implements PersNum
 {
 
     public $numero = 1;
     public $person = 3;
 
     public static $suffixmap = array(
-        1 => array(1 => 'Vm', 2 => 'Vd', 3 => 'A'),
-        3 => array(1 => '_Unk', 2 => '_WtEk', 3 => 'Uk'),
+        1 => array(
+            1 => array(1 => 'Vm', 2 => 'Vd', 3 => 'A'),
+            3 => array(1 => '_Unk', 2 => '_VtEk', 3 => 'Uk'),
+        ),
+        3 => array(
+            1 => array(1 => 'Aim', 2 => 'Aid', 3 => 'Ai'),
+            3 => array(1 => 'Aink', 2 => '_AitWk', 3 => 'Aik'),
+        ),
     );
 
-    public function & makePersNum($numero = 1, $person = 3)
+    public function & makeNumPers($numero = 1, $person = 3, $birtok_numero = 1)
     {
-        $suffixcode = self::$suffixmap[$numero][$person];
-        $obj = new BirtokosSuffixum($suffixcode);
+        $suffixcode = self::$suffixmap[$birtok_numero][$numero][$person];
+        $obj = new PossessiveSuffixum($suffixcode);
         $obj->numero = $numero;
         $obj->person = $person;
         $obj->is_opening = true;
         $obj->is_vtmr = true;
+        return $obj;
+    }
+
+    public function makePossessor($numero = 1)
+    {
+        $suffixcode = ($numero === 1) ? 'é' : 'éi';
+        $obj = new Suffixum($suffixcode);
+        $obj->numero = $numero;
+        $obj->person = 3;
+        $obj->is_opening = true;
+        $obj->is_vtmr = false;
         return $obj;
     }
 
@@ -501,7 +518,7 @@ class Nomen extends Wordform implements NominalCases, VirtualNominalCases
         $clone = parent::appendSuffix($suffix);
         if ($suffix->ortho === 'sÁg')
             $clone->is_jaje = false;
-        if ($suffix instanceof BirtokosSuffixum)
+        if ($suffix instanceof PossessiveSuffixum)
             $clone->is_opening = true;
         return $clone;
     }
