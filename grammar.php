@@ -267,7 +267,8 @@ class Wordform implements iWordformPhonology, iWordformMorphology
     {
         $clone = new $class($this->lemma, $this->ortho);
         foreach ($this as $key => $val)
-            $clone->$key = $val;
+            if (substr($key, 0, 1) !== '_')
+                $clone->$key = $val;
         return $clone;
     }
 
@@ -277,8 +278,8 @@ class Wordform implements iWordformPhonology, iWordformMorphology
 
     public function & appendSuffix(Suffixum & $suffix)
     {
-        $input_class = $suffix->getInputClass();
-        if (!($this instanceof $input_class))
+        $_input_class = $suffix->getInputClass();
+        if (!($this instanceof $_input_class))
             throw new Exception('This "'.$this->ortho.'" is a '.get_class($this).' while suffix "'.$suffix->ortho.'" wants '.$suffix->getInputClass());
         $stem = & $this->cloneAs($suffix->getOutputClass());
         $affix = clone $suffix;
@@ -449,18 +450,18 @@ interface iSuffixumMorphology
 class Suffixum extends Wordform implements iSuffixumMorphology
 {
 
-    public $input_class = 'Nomen';
-    public $output_class = 'Nomen';
+    public $_input_class = 'Nomen';
+    public $_output_class = 'Nomen';
     public $stop_jaje = false;
 
     public function getInputClass()
     {
-        return $this->input_class;
+        return $this->_input_class;
     }
 
     public function getOutputClass()
     {
-        return $this->output_class;
+        return $this->_output_class;
     }
 
     // iWordformPhonology {{{
@@ -499,7 +500,8 @@ class Suffixum extends Wordform implements iSuffixumMorphology
 
     public static $invalid_suffix_regex_list = array(
         '/[bcdfghkmptvw],t/',
-        '/[bcdfghklmnprstvwyz],[kmn]/',
+        '/[bcdfghklmnpqrstvwyz],[dkmn]/',
+        '/[bcdfghklmnpqrstvwyz]{2,},[bcdfghklmnpqrstvwyz]/',
         '/[lrsy],t.+/', // @see barnulástok, hoteltek
     );
 
@@ -587,8 +589,8 @@ interface PersNum
 class PossessiveSuffixum extends Suffixum implements PersNum
 {
 
-    public $input_class = 'iPossessable';
-    public $output_class = 'Nomen';
+    public $_input_class = 'iPossessable';
+    public $_output_class = 'Nomen';
     public $numero = 1;
     public $person = 3;
     public $possessed_numero = 1;
@@ -639,8 +641,8 @@ class PossessiveSuffixum extends Suffixum implements PersNum
  */
 class PossessorSuffixum extends Suffixum
 {
-    public $input_class = 'iPossessable';
-    public $output_class = 'Nomen';
+    public $_input_class = 'iPossessable';
+    public $_output_class = 'Nomen';
     public $numero = 1;
     public $person = 3;
     public $possessed_numero = 1;
@@ -698,8 +700,8 @@ class VerbalHelper
 abstract class aVerbalSuffixum extends Suffixum implements iVerbal
 {
 
-    public $input_class = 'Verbum';
-    public $output_class = 'Verbum';
+    public $_input_class = 'Verbum';
+    public $_output_class = 'Verbum';
 
     public $mood = NULL;
     public $tense = NULL;
@@ -716,7 +718,7 @@ abstract class aVerbalSuffixum extends Suffixum implements iVerbal
      * @param $tense = -1 múlt, 0 jelen, 1 jövő
      * @param $definite = 0 alanyi, 3 tárgyas, 2 lAk
      */
-    public function __construct($numero, $person, $mood, $tense, $definite)
+    public function __construct($numero, $person, $mood=1, $tense=0, $definite=0)
     {
         $this->mood = $mood;
         $this->tense = $tense;
@@ -754,7 +756,7 @@ abstract class aVerbalSuffixum extends Suffixum implements iVerbal
 class VerbalSuffixum1 extends aVerbalSuffixum
 {
 
-    public function __construct($numero, $person, $mood, $tense, $definite)
+    public function __construct($numero, $person, $mood=1, $tense=0, $definite=0)
     {
         parent::__construct($numero, $person, $mood, $tense, $definite);
         if ($this->tense === -1) // múlt idő jele
@@ -927,7 +929,7 @@ class VerbalSuffixum2 extends aVerbalSuffixum
         ),
     );
 
-    public function __construct($numero, $person, $mood, $tense, $definite)
+    public function __construct($numero, $person, $mood=1, $tense=0, $definite=0)
     {
         assert('isset(self::$paradigm[$mood][$tense][$definite][$numero][$person])');
         parent::__construct($numero, $person, $mood, $tense, $definite);
@@ -1004,6 +1006,87 @@ class VerbalSuffixum2 extends aVerbalSuffixum
 
 }
 
+class InfinitiveSuffixum extends aVerbalSuffixum
+{
+
+    public static $paradigm = array(
+        1 => array(
+            0 => array(
+                0 => array(
+                    0 => array(0 => 'ni'),
+                    1 => array(1 => 'nVm', 2 => 'nVd', 3 => 'niA'),
+                    3 => array(1 => 'nUnk', 2 => 'nVtVk', 3 => 'niUk'),
+                ),
+            ),
+        ),
+    );
+
+    public function __construct($numero, $person, $mood=1, $tense=0, $definite=0)
+    {
+        assert('isset(self::$paradigm[$mood][$tense][$definite][$numero][$person])');
+        $this->lemma = self::$paradigm[$mood][$tense][$definite][$numero][$person];
+    }
+
+    public function onBeforeSuffixed(& $stem)
+    {
+        $lemma = $this->lemma;
+        if ($stem->isSZV)
+            $lemma = 'n'.$lemma;
+        if (!$this->isValidSuffixConcatenation($stem->ortho, $lemma))
+        {
+            $lemma = 'A'.$lemma;
+            $stem->is_opening = true;
+        }
+        $this->ortho = Phonology::interpolateVowels($stem, $lemma);
+    }
+
+    public static $invalid_suffix_regex_list = array(
+        '/lt,n/',
+    );
+
+    public function isValidSuffixConcatenation($ortho_stem, $ortho_suffix)
+    {
+        $string = "$ortho_stem,$ortho_suffix";
+        foreach (self::$invalid_suffix_regex_list as $regex)
+            if (preg_match($regex, $string))
+                return false;
+        return true;
+    }
+
+}
+
+class PostpositionSuffixum extends Suffixum
+{
+
+    // @todo
+    public $_input_class = 'Nomen';
+    public $_output_class = 'Nomen';
+
+    public static $paradigm = array(
+        0 => array(0 => ''),
+        1 => array(1 => '_Am', 2 => '_Ad', 3 => 'A'),
+        3 => array(1 => '_Unk', 2 => '_AtWk', 3 => 'Uk'),
+    );
+
+    public function __construct($numero=0, $person=0)
+    {
+        assert('isset(self::$paradigm[$numero][$person])');
+        $this->lemma = self::$paradigm[$numero][$person];
+        $this->numero = $numero;
+        $this->person = $person;
+    }
+
+    public function onBeforeSuffixed(& $stem)
+    {
+        if ($stem->isLastVowel() && $this->numero === 1 && $this->person === 3)
+            $this->lemma = ''; // LingVar: 'j'.$this->lemma; // alája
+        if ($stem->isLastVowel() && $this->numero === 3 && $this->person === 3)
+            $this->lemma = 'j'.$this->lemma;
+        parent::onBeforeSuffixed($stem);
+    }
+
+}
+
 class Verbum extends Wordform implements iVerbal
 {
     public $mood = NULL;
@@ -1043,7 +1126,7 @@ class Verbum extends Wordform implements iVerbal
 
     public function onBeforeSuffixation(& $suffix)
     {
-        if ($this->isPlusV && $suffix->matchCase('..10.'))
+        if ($this->isPlusV && $suffix->matchCase('..10.') && $suffix instanceof VerbalSuffixum2)
         {
             // @fixme this is a bit too complex. store the results in the lexicon instead?
             if (
@@ -1065,14 +1148,24 @@ class Verbum extends Wordform implements iVerbal
                 $this->ortho = $this->lemma2;
         }
 
+        if ($this->isSZV && $suffix instanceof InfinitiveSuffixum)
+        {
+            $this->ortho = $this->lemma2;
+        }
+
         if ($this->isSZDV && $suffix instanceof VerbalSuffixum1)
         {
             if ($suffix->matchCase('..[23]..|...9.'))
                 $this->ortho = $this->lemma2;
         }
 
+        if ($this->isSZDV && $suffix instanceof InfinitiveSuffixum)
+        {
+            $this->ortho = $this->lemma2;
+        }
+
         // @fixme
-        if ($this->lemma === 'alsz')
+        if ($this->lemma === 'alsz' && $suffix instanceof VerbalSuffixum2)
         {
             if ($suffix->matchCase('(13|3.)103'))
                 $this->ortho = 'alusz';
@@ -1152,7 +1245,11 @@ class Verbum extends Wordform implements iVerbal
         return VerbalHelper::matchCase($this, $regex);
     }
 
-    public function & makeInfinitive($numero=NULL, $person=NULL) { }
+    public function & makeInfinitive($numero=0, $person=0)
+    {
+        $suffix = new InfinitiveSuffixum($numero, $person);
+        return $this->appendSuffix($suffix);
+    }
 
     // tAt Műveltető
     public function & makeCausative() { }
@@ -1452,6 +1549,61 @@ class Nomen extends Wordform implements iPossessable, NominalCases, VirtualNomin
 
 }
 
+class AdjSuffixum extends Suffixum
+{
+
+    public $_input_class = 'Adj';
+    public $_output_class = 'Adj';
+
+}
+
+class Adj extends Nomen
+{
+
+    public function & makeComparativus()
+    {
+        if (!($this->case === "Nominativus"))
+            throw new Exception('Adj '.__METHOD__.'() needs Nominativus');
+        $bb = & GFactory::parseSuffixum('_Vbb')->cloneAs('AdjSuffixum');
+        $A = & $this->appendSuffix($bb);
+        $A->case = 'Comparativus';
+        return $A;
+    }
+
+    public function & makeSuperlativus()
+    {
+        if (!($this->case === "Nominativus"))
+            throw new Exception('Adj '.__METHOD__.'() needs Nominativus');
+        $A = & $this->makeComparativus();
+        // @todo prependPrefix()
+        $A->ortho = 'leg'.$A->ortho;
+        $A->case = 'Superlativus';
+        return $A;
+    }
+
+    public function & makeSuperlativus2()
+    {
+        if (!($this->case === "Nominativus"))
+            throw new Exception('Adj '.__METHOD__.'() needs Nominativus');
+        $A = & $this->makeSuperlativus();
+        $A->ortho = 'leges'.$A->ortho;
+        $A->case = 'Superlativus2';
+        return $A;
+    }
+
+    // @fixme english/latin name
+    public function & kiemelo()
+    {
+        if (!($this->case === "Comparativus" || $this->case === "Superlativus" || $this->case === "Superlativus2"))
+            throw new Exception('Adj '.__METHOD__.'() needs Comparativus or Superlativus or Superlativus2');
+        $bb = & GFactory::parseSuffixum('ik')->cloneAs('AdjSuffixum');
+        $A = & $this->appendSuffix($bb);
+        $A->case = '+';
+        return $A;
+    }
+
+}
+
 abstract class HeadedExpression
 {
     public $case = NULL;
@@ -1670,6 +1822,13 @@ class GFactory
         return $obj;
     }
 
+    public static function parseADJ($string)
+    {
+        $obj = & GFactory::parseNP($string)->cloneAs('Adj');
+        $obj->is_opening = true; // a melléknevek túlnyomó többsége nyitótővű
+        return $obj;
+    }
+
     // not full list
     public static $suffixum_vtmr_list = array(
         '_Vk', // többesjel
@@ -1737,14 +1896,14 @@ class GFactory
         $obj->stop_jaje = in_array($string, self::$suffixum_stop_jaje_list, true);
 
         if (isset(self::$suffixum_classes[$string]))
-            list($input_class, $output_class) = self::$suffixum_classes[$string];
+            list($_input_class, $_output_class) = self::$suffixum_classes[$string];
         else
         {
-            $input_class = 'Nomen';
-            $output_class = 'Nomen';
+            $_input_class = 'Nomen';
+            $_output_class = 'Nomen';
         }
-        $obj->input_class = $input_class;
-        $obj->output_class = $output_class;
+        $obj->_input_class = $_input_class;
+        $obj->_output_class = $_output_class;
         return $obj;
     }
 

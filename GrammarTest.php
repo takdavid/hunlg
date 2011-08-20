@@ -546,10 +546,55 @@ class EmberTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($V->conjugate(1, 1, 1, -1, 0)->matchCase('..[23]..|...9.'));
     }
 
+    public function testInfinitiveConjugation()
+    {
+        $this->checkInfinitiveConjugation(GFactory::parseV('olvas'), array(
+            'olvasni',
+            'olvasnom', 'olvasnod', 'olvasnia', 'olvasnunk', 'olvasnotok', 'olvasniuk'));
+
+        $this->checkInfinitiveConjugation(GFactory::parseV('tesz'), array(
+            'tenni',
+            'tennem', 'tenned', 'tennie', 'tennünk', 'tennetek', 'tenniük'));
+
+        $this->checkInfinitiveConjugation(GFactory::parseV('hisz'), array(
+            'hinni',
+            'hinnem', 'hinned', 'hinnie', 'hinnünk', 'hinnetek', 'hinniük'));
+
+        $this->checkInfinitiveConjugation(GFactory::parseV('esz'), array(
+            'enni',
+            'ennem', 'enned', 'ennie', 'ennünk', 'ennetek', 'enniük'));
+
+        $this->checkInfinitiveConjugation(GFactory::parseV('isz'), array(
+            'inni',
+            'innom', 'innod', 'innia', 'innunk', 'innotok', 'inniuk'));
+
+        $this->checkInfinitiveConjugation(GFactory::parseV('űz'), array(
+            'űzni',
+            'űznöm', 'űznöd', 'űznie', 'űznünk', 'űznötök', 'űzniük'));
+
+        $this->checkInfinitiveConjugation(GFactory::parseV('költ'), array(
+            'költeni',
+            'költenem', 'költened', 'költenie', 'költenünk', 'költenetek', 'költeniük'));
+
+        $this->checkInfinitiveConjugation(GFactory::parseV('lő'), array(
+            'lőni',
+            'lőnöm', 'lőnöd', 'lőnie', 'lőnünk', 'lőnötök', 'lőniük'));
+
+        $this->checkInfinitiveConjugation(GFactory::parseV('ró'), array(
+            'róni',
+            'rónom', 'rónod', 'rónia', 'rónunk', 'rónotok', 'róniuk'));
+
+        $this->checkInfinitiveConjugation(GFactory::parseV('alsz'), array(
+            'aludni',
+            'aludnom', 'aludnod', 'aludnia', 'aludnunk', 'aludnotok', 'aludniuk'));
+
+    }
+
     public function testVerbConjugation()
     {
         unset($V);
         $V = & GFactory::parseV('olvas');
+
         $this->assertEquals('olvas', (string) $V->getCitationForm());
         $this->assertEquals('olvastál volna', (string) $V->conjugate(1, 2, 2, -1, 0));
         $this->assertEquals('olvastad volna', (string) $V->conjugate(1, 2, 2, -1, 3));
@@ -563,15 +608,13 @@ class EmberTest extends PHPUnit_Framework_TestCase
             'olvasnám', 'olvasnád', 'olvasná', 'olvasnánk', 'olvasnátok', 'olvasnák', 
             'olvassak', 'olvassál', 'olvasson', 'olvassunk', 'olvassatok', 'olvassanak',  // @todo olvass
             'olvassam', 'olvassad', 'olvassa', 'olvassuk', 'olvassátok', 'olvassák', // @todo olvasd
+            'olvaslak',
+            'olvastalak',
+            'olvasnálak',
+            'olvassalak',
         ));
 
         $this->assertTrue(GFactory::parseV('tesz')->isSZV);
-        $this->assertEquals('teszlek', (string) GFactory::parseV('tesz')->conjugate(1, 1, 1, 0, 2));
-        $this->assertEquals('tettelek', (string) GFactory::parseV('tesz')->conjugate(1, 1, 1, -1, 2));
-        $this->assertEquals('tennélek', (string) GFactory::parseV('tesz')->conjugate(1, 1, 2, 0, 2));
-        $this->assertEquals('tegyelek', (string) GFactory::parseV('tesz')->conjugate(1, 1, 3, 0, 2));
-
-
         $this->checkConjugation(GFactory::parseV('tesz'), array(
             'teszek', 'teszel', 'tesz', 'teszünk', 'tesztek', 'tesznek', 
             'teszem', 'teszed', 'teszi', 'tesszük', 'teszitek', 'teszik', 
@@ -581,6 +624,10 @@ class EmberTest extends PHPUnit_Framework_TestCase
             'tenném', 'tennéd', 'tenné', 'tennénk', 'tennétek', 'tennék', 
             'tegyek', 'tegyél', 'tegyen', 'tegyünk', 'tegyetek', 'tegyenek', 
             'tegyem', 'tegyed', 'tegye', 'tegyük', 'tegyétek', 'tegyék', 
+            'teszlek',
+            'tettelek',
+            'tennélek',
+            'tegyelek',
         ));
 
         $this->checkConjugation(GFactory::parseV('hisz'), array(
@@ -616,11 +663,6 @@ class EmberTest extends PHPUnit_Framework_TestCase
             'igyam', 'igyad', 'igya', 'igyuk', 'igyátok', 'igyák', 
         ));
 
-        $this->assertEquals('űzlek', (string) GFactory::parseV('űz')->conjugate(1, 1, 1, 0, 2));
-        $this->assertEquals('űztelek', (string) GFactory::parseV('űz')->conjugate(1, 1, 1, -1, 2));
-        $this->assertEquals('űznélek', (string) GFactory::parseV('űz')->conjugate(1, 1, 2, 0, 2));
-        $this->assertEquals('űzzelek', (string) GFactory::parseV('űz')->conjugate(1, 1, 3, 0, 2));
-
         $this->checkConjugation(GFactory::parseV('űz'), array(
             'űzök', 'űzöl', 'űz', 'űzünk', 'űztök', 'űznek', 
             'űzöm', 'űzöd', 'űzi', 'űzzük', 'űzitek', 'űzik', 
@@ -630,6 +672,10 @@ class EmberTest extends PHPUnit_Framework_TestCase
             'űzném', 'űznéd', 'űzné', 'űznénk', 'űznétek', 'űznék', 
             'űzzek', 'űzzél', 'űzzön', 'űzzünk', 'űzzetek', 'űzzenek', 
             'űzzem', 'űzzed', 'űzze', 'űzzük', 'űzzétek', 'űzzék',
+            'űzlek',
+            'űztelek',
+            'űznélek',
+            'űzzelek',
         ));
 
         $this->assertTrue(GFactory::parseV('költ')->needSuffixI());
@@ -648,11 +694,6 @@ class EmberTest extends PHPUnit_Framework_TestCase
 
         $this->assertTrue(GFactory::parseV('lő')->isPlusV);
 
-        $this->assertEquals('lőlek', (string) GFactory::parseV('lő')->conjugate(1, 1, 1, 0, 2));
-        $this->assertEquals('lőttelek', (string) GFactory::parseV('lő')->conjugate(1, 1, 1, -1, 2));
-        $this->assertEquals('lőnélek', (string) GFactory::parseV('lő')->conjugate(1, 1, 2, 0, 2));
-        $this->assertEquals('lőjelek', (string) GFactory::parseV('lő')->conjugate(1, 1, 3, 0, 2));
-
         $this->checkConjugation(GFactory::parseV('lő'), array(
             'lövök', 'lősz', 'lő', 'lövünk', 'lőtök', 'lőnek',
             'lövöm', 'lövöd', 'lövi', 'lőjük', 'lövitek', 'lövik',
@@ -662,6 +703,10 @@ class EmberTest extends PHPUnit_Framework_TestCase
             'lőném', 'lőnéd', 'lőné', 'lőnénk', 'lőnétek', 'lőnék',
             'lőjek', 'lőjél', 'lőjön', 'lőjünk', 'lőjetek', 'lőjenek', // @todo lőj
             'lőjem', 'lőjed', 'lője', 'lőjük', 'lőjétek', 'lőjék', // @todo lődd
+            'lőlek',
+            'lőttelek',
+            'lőnélek',
+            'lőjelek',
         ));
 
         $this->checkConjugation(GFactory::parseV('ró'), array(
@@ -903,6 +948,10 @@ class EmberTest extends PHPUnit_Framework_TestCase
             array(3, 1, 3, 0, 3),
             array(3, 2, 3, 0, 3),
             array(3, 3, 3, 0, 3),
+            array(1, 1, 1, 0, 2),
+            array(1, 1, 1, -1, 2),
+            array(1, 1, 2, 0, 2),
+            array(1, 1, 3, 0, 2),
         );
 
         foreach ($conjugations as $i => $conjugation)
@@ -912,6 +961,82 @@ class EmberTest extends PHPUnit_Framework_TestCase
             $expected = $verbforms[$i];
             $actual = (string) call_user_func_array(array(& $V, 'conjugate'), $conjugation);
             $this->assertEquals($expected, $actual, '('.implode(',', $conjugation).") of '$V' should be '$expected', not '$actual'.");
+        }
+    }
+
+    public function checkInfinitiveConjugation(& $V, $verbforms)
+    {
+        $conjugations = array(
+            array(0, 0),
+            array(1, 1),
+            array(1, 2),
+            array(1, 3),
+            array(3, 1),
+            array(3, 2),
+            array(3, 3),
+        );
+        foreach ($conjugations as $i => $conjugation)
+        {
+            if (empty($verbforms[$i]))
+                continue;
+            $expected = $verbforms[$i];
+            $actual = (string) call_user_func_array(array(& $V, 'makeInfinitive'), $conjugation);
+            $this->assertEquals($expected, $actual, 'Infinitive ('.implode(',', $conjugation).") of '$V' should be '$expected', not '$actual'.");
+        }
+    }
+
+    public function testAdj()
+    {
+        $A = & GFactory::parseADJ('vidám');
+        $this->assertTrue($A instanceof Adj);
+        $this->assertEquals('vidámabb', (string) $A->makeComparativus());
+        $this->assertEquals('legvidámabb', (string) $A->makeSuperlativus());
+        $this->assertEquals('legeslegvidámabb', (string) $A->makeSuperlativus2());
+        $this->assertEquals('legeslegvidámabbik', (string) $A->makeSuperlativus2()->kiemelo());
+    }
+
+    public function testPostpositionInflection()
+    {
+        $this->checkPostpositionInflection(GFactory::parseNP('mellé'), array('mellé',
+            'mellém', 'melléd', 'mellé', 'mellénk', 'mellétek', 'melléjük'));
+
+        $this->checkPostpositionInflection(GFactory::parseNP('mellett'), array('mellett',
+            'mellettem', 'melletted', 'mellette', 'mellettünk', 'mellettetek', 'mellettük'));
+
+        $this->checkPostpositionInflection(GFactory::parseNP('mellől'), array('mellől',
+            'mellőlem', 'mellőled', 'mellőle', 'mellőlünk', 'mellőletek', 'mellőlük'));
+
+        $this->checkPostpositionInflection(GFactory::parseNP('belé'), array('belé',
+            'belém', 'beléd', 'belé', 'belénk', 'belétek', 'beléjük'));
+
+        $this->checkPostpositionInflection(GFactory::parseNP('benn'), array('benn',
+            'bennem', 'benned', 'benne', 'bennünk', 'bennetek', 'bennük'));
+
+        $this->checkPostpositionInflection(GFactory::parseNP('nál'), array('nál',
+            'nálam', 'nálad', 'nála', 'nálunk', 'nálatok', 'náluk'));
+
+        $this->checkPostpositionInflection(GFactory::parseNP('alá'), array('alá',
+            'alám', 'alád', 'alá', 'alánk', 'alátok', 'alájuk'));
+    }
+
+    public function checkPostpositionInflection(& $P, $forms)
+    {
+        $conjugations = array(
+            array(0, 0),
+            array(1, 1),
+            array(1, 2),
+            array(1, 3),
+            array(3, 1),
+            array(3, 2),
+            array(3, 3),
+        );
+        foreach ($conjugations as $i => $conjugation)
+        {
+            if (empty($forms[$i]))
+                continue;
+            $expected = $forms[$i];
+            $actual = (string) $P->appendSuffix(new PostpositionSuffixum($conjugation[0], $conjugation[1]));
+            $this->assertEquals($expected, $actual, 'Postposition ('.implode(',', $conjugation).") '$P' should be '$expected', not '$actual'.");
         }
     }
 
