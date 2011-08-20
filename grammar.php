@@ -176,12 +176,44 @@ class Phonology
         return $suffix;
     }
 
+    public static $consonant_regex = '/(ddzs|ccs|ddz|dzs|ggy|lly|nny|ssz|tty|zzs|bb|cc|cs|dd|dz|ff|gg|gy|h|hh|jj|k|kk|ll|ly|mm|nn|ny|pp|qq|rr|ss|sz|tt|ty|vv|ww|xx|zs|zz|b|c|d|f|g|j|l|m|n|p|q|r|s|t|v|w|x|z)$/';
+
     public static function getLastConsonant($ortho)
     {
-        $last = mb_substr($ortho, -1, 1);
-        if ($last === 'y')
-            $last = mb_substr($ortho, -2, 2);
-        return $last;
+        if (preg_match(self::$consonant_regex, $ortho, $match))
+            return $match[1];
+        return NULL;
+    }
+
+    public static function doubleConsonant($ortho)
+    {
+        assert('$ortho === self::getLastConsonant($ortho)');
+        $len = mb_strlen($ortho);
+        if ($len === 1)
+            return $ortho.$ortho;
+        elseif ($len === 2)
+        {
+            $c0 = mb_substr($ortho, 0, 1);
+            $c1 = mb_substr($ortho, 1, 1);
+            if ($c0 === $c1)
+                return $ortho;
+            else
+                return $c0.$ortho;
+        }
+        elseif ($len === 3 && $ortho === 'dzs')
+            return 'ddzs';
+        else
+            return $ortho;
+    }
+
+    public static function isAffrikate($cons)
+    {
+        return in_array($cons, array('dz', 'ddz', 'dzs', 'ddzs', 'c', 'cc', 'cs', 'ccs'));
+    }
+
+    public static function isSybyl($cons)
+    {
+        return in_array($cons, array('s', 'ss', 'sz', 'ssz', 'z', 'zz', 'zs', 'zzs'));
     }
 
     public static $invalid_suffix_regex_list = array(
@@ -425,6 +457,7 @@ interface iSuffixumMorphology
     public function getOptionalInterfix();
     public function getNonOptionalSuffix();
     public function getInterfix(& $stem);
+    public function onBeforeSuffixed(& $stem);
     public function onAfterSuffixed(& $stem);
 }
 
@@ -521,14 +554,13 @@ class Suffixum extends Wordform implements iSuffixumMorphology
 
     public function hasonul(& $stem, $ortho, $char)
     {
-        if (mb_substr($ortho, 0, 1) === $char)
-        {
-            if ($stem->isLastVowel())
-                $first = $char;
-            else
-                $first = Phonology::getLastConsonant($stem->ortho);
-            $ortho = $first.mb_substr($ortho, 1);
-        }
+        if (mb_substr($ortho, 0, 1) !== $char)
+            return $ortho;
+        if ($stem->isLastVowel())
+            return $ortho;
+        $cons = Phonology::getLastConsonant($stem->ortho);
+        $stem->ortho = mb_substr($stem->ortho, 0, -mb_strlen($cons));
+        $ortho = Phonology::doubleConsonant($cons).mb_substr($ortho, 1);
         return $ortho;
     }
 
@@ -586,8 +618,9 @@ class PossessiveSuffixum extends Suffixum implements PersNum
         return $obj;
     }
 
-    public function onBeforeSuffixed(iPossessable & $stem)
+    public function onBeforeSuffixed(& $stem)
     {
+        assert('$stem instanceof iPossessable');
         parent::onBeforeSuffixed($stem);
         // birtokos A/jA
         if ($this->person === 3 && $this->possessed_numero === 1 && $stem->isJaje())
@@ -634,30 +667,43 @@ class PossessorSuffixum extends Suffixum
 
 class VerbalSuffixum extends Suffixum
 {
+    public $mood = NULL;
+    public $tense = NULL;
+    public $definite = NULL;
+    public $numero = NULL;
+    public $person = NULL;
 
     public $input_class = 'Verbum';
     public $output_class = 'Verbum';
 
+    /**
+     * $paradigm[$mood][$tense][$definite][$numero][$person]
+     * $mood = 1 kijelentő, 2 feltételes, 3 felszólító
+     * $tense = -1 múlt, 0 jelen, 1 jövő
+     * $definite = 0 alanyi, 3 tárgyas, 2 lAk
+     * $numero = 1 egyes szám, 3 többes szám
+     * $person = 1 első személy, 2 második személy, 3 harmadik személy
+     */
     public static $paradigm = array(
         1 => array(
             0 => array(
                 0 => array(
-                    1 => array(1 => 'Vk', 2 => 'Vl', 3 => ''),
+                    1 => array(1 => 'Vk', 2 => '_Asz|Vl', 3 => ''),
                     3 => array(1 => 'Unk', 2 => '_VtVk', 3 => '_AnAk'),
                 ),
-                1 => array(
-                    1 => array(1 => 'Vm', 2 => 'Vd', 3 => 'ja'),
-                    3 => array(1 => 'jUk', 2 => 'jÁtVk', 3 => 'jÁk'),
+                3 => array(
+                    1 => array(1 => 'Vm', 2 => 'Vd', 3 => 'ja|i'),
+                    3 => array(1 => 'jUk', 2 => 'jÁtVk|itek', 3 => 'jÁk|ik'),
                 ),
             ),
             -1 => array(
                 0 => array(
                     1 => array(1 => 'Am', 2 => 'Ál', 3 => ''),
-                    3 => array(1 => 'Unk', 2 => '_AtVk', 3 => 'Ak'),
+                    3 => array(1 => 'Unk', 2 => '_AtWk', 3 => 'Ak'),
                 ),
-                1 => array(
+                3 => array(
                     1 => array(1 => 'Am', 2 => 'Ad', 3 => 'A'),
-                    3 => array(1 => 'Uk', 2 => '_ÁtVk', 3 => 'Ák'),
+                    3 => array(1 => 'Uk', 2 => 'ÁtWk', 3 => 'Ák'),
                 ),
             ),
         ),
@@ -665,11 +711,11 @@ class VerbalSuffixum extends Suffixum
             0 => array(
                 0 => array(
                     1 => array(1 => 'ék', 2 => 'Ál', 3 => 'A'),
-                    3 => array(1 => 'Ánk', 2 => 'ÁtVk', 3 => 'ÁnAk'),
+                    3 => array(1 => 'Ánk', 2 => 'ÁtWk', 3 => 'ÁnAk'),
                 ),
-                1 => array(
+                3 => array(
                     1 => array(1 => 'Ám', 2 => 'Ád', 3 => 'Á'),
-                    3 => array(1 => 'Ánk', 2 => 'ÁtVk', 3 => 'Ák'),
+                    3 => array(1 => 'Ánk', 2 => 'ÁtWk', 3 => 'Ák'),
                 ),
             ),
         ),
@@ -677,20 +723,27 @@ class VerbalSuffixum extends Suffixum
             0 => array(
                 0 => array(
                     1 => array(1 => 'Ak', 2 => 'Ál', 3 => 'On'),
-                    3 => array(1 => 'Unk', 2 => 'AtOk', 3 => 'AnAk'),
+                    3 => array(1 => 'Unk', 2 => 'AtWk', 3 => 'AnAk'),
                 ),
-                1 => array(
+                3 => array(
                     1 => array(1 => 'Am', 2 => 'Ad', 3 => 'A'),
-                    3 => array(1 => 'Uk', 2 => 'ÁtVk', 3 => 'Ák'),
+                    3 => array(1 => 'Uk', 2 => 'ÁtWk', 3 => 'Ák'),
                 ),
             ),
         ),
     );
 
-    public static function & conjugate($numero, $person, $moode, $tense, $definite)
+    /**
+     * @param $numero = 1 egyes szám, 3 többes szám
+     * @param $person = 1 első személy, 2 második személy, 3 harmadik személy
+     * @param $mood = 1 kijelentő, 2 feltételes, 3 felszólító
+     * @param $tense = -1 múlt, 0 jelen, 1 jövő
+     * @param $definite = 0 alanyi, 3 tárgyas, 2 lAk
+     */
+    public static function & conjugate($numero, $person, $mood, $tense, $definite)
     {
-        $suffix = new VerbalSuffixum(self::$paradigm[$moode][$tense][$definite][$numero][$person]);
-        $suffix->moode = $moode;
+        $suffix = new VerbalSuffixum(self::$paradigm[$mood][$tense][$definite][$numero][$person]);
+        $suffix->mood = $mood;
         $suffix->tense = $tense;
         $suffix->definite = $definite;
         $suffix->numero = $numero;
@@ -698,63 +751,121 @@ class VerbalSuffixum extends Suffixum
         return $suffix;
     }
 
-    public static $valid_suffix_regex_list = array(
-        '/s,[nt][^nt]/',
+    public static $invalid_suffix_regex_list = array(
+        //'/[^sz],[nt][^nt]/',
+        '/[bcdfhjklmpqrvwxz][bcdfghjklmnpqrstvwxyz],[bcdfghklmnpqrtvwxyz]/',
+        '/tt,t/',
+        '/t,tt/',
+        '/[bcdfghjklmnpqrstvwxyz],[bcdfghjklmnpqrstvwxyz]{2,}/',
     );
 
     public function isValidSuffixConcatenation($ortho_stem, $ortho_suffix)
     {
         $string = "$ortho_stem,$ortho_suffix";
-        //print " isValidSuffixConcatenation($string) ";
-        foreach (self::$valid_suffix_regex_list as $regex)
+        foreach (self::$invalid_suffix_regex_list as $regex)
             if (preg_match($regex, $string))
-                return true;
-        return false;
+                return false;
+        return true;
     }
 
     public function getInterfix(& $stem)
     {
         $interfix = '';
-        if ($this->moode === 1 && $this->tense === -1)
+        if ($this->tense === -1) // múlt idő jele
         {
-            if (!$stem->isLastVowel() && $this->numero === 1 && $this->person === 3 && !$this->definite)
-                return Phonology::interpolateVowels($stem, 'Vt').'t';
-            $interfix = 't';
+            if ($stem->needVtt($this)) // Vtt
+                $interfix =  Phonology::interpolateVowels($stem, 'Vtt');
+            else // t
+                $interfix = 't';
         }
-        if ($this->moode === 2 && $this->tense === 0)
+        if ($this->mood === 2 && $this->tense === 0)
             $interfix = 'n';
-        if ($this->moode === 3)
+        //print "stem/1=$stem ";
+        if ($this->mood === 3 && !$stem->inhibitJ())
             $interfix = $this->hasonul($stem, 'j', 'j');
-        //print "stem=$stem suffix=$this ";
-        //print "hasOptionalInterfix=".(int) $this->hasOptionalInterfix();
-        //print "isValidSuffixConcatenation=".(int) $this->isValidSuffixConcatenation($stem->ortho, $this->ortho);
-        if ($this->hasOptionalInterfix() && !$this->isValidSuffixConcatenation($stem->ortho, $interfix.$this->ortho))
+        //print "stem/2=$stem ";
+        //print "interfix/1=$interfix ";
+        // stem<vowel>interfix
+        if (!$this->isValidSuffixConcatenation($stem->ortho, $interfix))
+            $interfix = Phonology::interpolateVowels($stem, 'A').$interfix;
+        //print "interfix/2=$interfix ";
+        // stem+interfix<vowel>suffix
+        if ($this->hasOptionalInterfix() && !$this->isValidSuffixConcatenation($stem->ortho.$interfix, $this->ortho))
         {
             $interfix .= $this->getOptionalInterfix();
-            //print "interfix/2=$interfix ";
             $interfix = Phonology::interpolateVowels($stem, $interfix);
-            //print "interfix/3=$interfix ";
         }
+        //print "interfix/3=$interfix ";
+        // stem<vowel>interfix+suffix
+        if (!$this->isValidSuffixConcatenation($stem->ortho, $interfix.$this->ortho))
+            $interfix .= Phonology::interpolateVowels($stem, 'A');
         //print "interfix/4=$interfix ";
         return $interfix;
     }
 
     public function onBeforeSuffixed(& $stem)
     {
+        $lemma = $this->lemma;
+        if (strpos($lemma, '|'))
+        {
+            $alters = explode('|', $lemma);
+            $i = 0;
+            // Vl/Asz
+            if (
+                ($this->numero === 1 && $this->person === 2)
+                && $this->mood === 1 
+                && $this->tense === 0
+                && $this->definite === 0
+                && (
+                    Phonology::isAffrikate(Phonology::getLastConsonant($stem->ortho))
+                    || Phonology::isSybyl(Phonology::getLastConsonant($stem->ortho))
+                )
+            )
+            {
+                $i = 1;
+            }
+            if (
+                (
+                    ($this->numero === 1 && $this->person === 3) ||
+                    ($this->numero === 3 && $this->person === 2) ||
+                    ($this->numero === 3 && $this->person === 3)
+                ) 
+                && $this->mood === 1 
+                && $this->tense === 0
+                && $this->definite === 3
+                && $stem->needSuffixI()
+            )
+            {
+                    $i = 1;
+            }
+            $lemma = $alters[$i];
+        }
+        $this->lemma = $lemma;
         $ortho = $this->getNonOptionalSuffix();
-        $ortho = $this->hasonul($stem, $ortho, 'j');
+        if (!$stem->inhibitJ())
+            $ortho = $this->hasonul($stem, $ortho, 'j');
         $ortho = Phonology::interpolateVowels($stem, $ortho);
         $this->ortho = $ortho;
     }
 
     public function onAfterSuffixed(& $stem)
     {
+        $stem->mood = $this->mood;
+        $stem->tense = $this->tense;
+        $stem->definite = $this->definite;
+        $stem->numero = $this->numero;
+        $stem->person = $this->person;
     }
 
 }
 
 class Verbum extends Wordform
 {
+    public $mood = NULL;
+    public $tense = NULL;
+    public $definite = NULL;
+    public $numero = NULL;
+    public $person = NULL;
 
     // Szótári alak
     public function & getCitationForm()
@@ -764,11 +875,76 @@ class Verbum extends Wordform
         return $clone;
     }
 
-    public function & conjugate($numero, $person, $moode, $tense, $definite)
+    public function & conjugate($numero, $person, $mood, $tense, $definite)
     {
-        $suffix = VerbalSuffixum::conjugate($numero, $person, $moode, $tense, $definite);
-        $clone = & $this->appendSuffix($suffix);
-        return $clone;
+        if ($mood === 2 && $tense === -1)
+        {
+            $suffix = VerbalSuffixum::conjugate($numero, $person, 1, $tense, $definite);
+            $arg = & $this->appendSuffix($suffix);
+            $head = new Wordform('volna');
+            $morphoword = new MorphoWord($head, $arg);
+            return $morphoword;
+        }
+        else
+        {
+            $suffix = VerbalSuffixum::conjugate($numero, $person, $mood, $tense, $definite);
+            $clone = & $this->appendSuffix($suffix);
+            return $clone;
+        }
+    }
+
+    public function onBeforeSuffixation(& $suffix)
+    {
+        // @todo full list lő nő sző fő ró
+        // @todo full list tesz lesz vesz hisz visz eszik iszik
+        if ($this->lemma === 'tesz')
+        {
+            if ($suffix->tense === -1)
+                $this->ortho = 'tet';
+            if ($suffix->mood === 2)
+                $this->ortho = 'ten';
+            if ($suffix->mood === 3)
+                $this->ortho = 'tegy';
+        }
+        if ($this->lemma === 'költ')
+        {
+            if ($suffix->mood === 3)
+            {
+                $this->ortho = 'költs';
+            }
+        }
+    }
+
+    public function inhibitJ()
+    {
+        if (!$this->isLastVowel())
+        {
+            $cons = Phonology::getLastConsonant($this->ortho);
+            $arr = array('t', 'gy');
+            if (in_array($cons, $arr))
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * @todo gAt, _tAt, hAt => needVtt
+     * CC (C!=t) => ingadozók
+     */
+    public function needVtt(& $suffix)
+    {
+        $cons = Phonology::getLastConsonant($this->lemma);
+        if ($cons === 't')
+            return true;
+        $arr = array('m', 'v', 'r', 's', 'ss', 't', 'tt', 'z', 'zz', 'zs', 'zzs');
+        if (in_array($cons, $arr))
+        {
+            if ($suffix->numero === 1 && $suffix->person === 3 && $suffix->definite === 0)
+                return true;
+            else
+                return false;
+        }
+        return false;
     }
 
     public function & makeInfinitive($numero=NULL, $person=NULL) { }
@@ -1086,6 +1262,23 @@ abstract class HeadedExpression
     public function & pronominalize()
     {
         throw new Exception();
+    }
+
+    public function __toString()
+    {
+        return '[' . (string) $this->head . ' ' . $this->arg . ']';
+    }
+
+}
+
+/** Morfológiai szó
+ */
+class MorphoWord extends HeadedExpression
+{
+
+    public function __toString()
+    {
+        return (string) $this->arg . ' ' . $this->head;
     }
 
 }
