@@ -167,7 +167,7 @@ class Phonology
         ),
         false => array(
             '--' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'o', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'o', 'W' => 'o'),
-            'U-' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'o', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'a', 'W' => 'o'),
+            'U-' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'o', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'o', 'W' => 'o'),
             '-I' => array( 'A' => 'e', 'Á' => 'é', 'E' => 'e', 'O' => 'e', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'V' => 'e', 'W' => 'e'),
             'UI' => array( 'A' => 'e', 'Á' => 'é', 'E' => 'ö', 'O' => 'ö', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'V' => 'ö', 'W' => 'e'),
         ),
@@ -192,13 +192,15 @@ class Phonology
         //print 'isAMNYLeft='.(int) $nomen->isAMNYLeft().' isAMNYRight='.(int) $suffix->isAMNYRight();
         if ($nomen->isAMNYLeft() && $suffix->isAMNYRight())
             $stem = self::doAMNY($nomen->ortho);
+        if ($nomen->isVolatile() && $suffix->isVolatile())
+            $stem = $nomen->lemma2;
 
         //if ($suffix instanceof PossessiveSuffixum)
         ////    print 'nomen '.$nomen->ortho.' is '.get_class($nomen).' ';
 
         $is_opening = $nomen->isOpening();
         $nomen_phonocode = 
-            (Phonology::needSuffixU($nomen->ortho) ? 'U' : '-') . 
+            (Phonology::needSuffixU($stem) ? 'U' : '-') . 
             ($nomen->needSuffixI() ? 'I' : '-') ;
         //print "\n".'lemma='.$nomen->lemma.' opening='.(int) $is_opening.' phonocode='.$nomen_phonocode;
         $vowelmap = self::$vowelmaps[$is_opening][$nomen_phonocode];
@@ -243,8 +245,8 @@ class Phonology
     }
 
     public static $invalid_suffix_regex_list = array(
-        '/d,t/', '/k,t/',                   '/t,t/', 
-        '/d,k/', '/k,k/', '/n,k/', '/r,k/', '/t,k/', '/z,k/', 
+        '/[dkt],t/',
+        '/[dghklmnrtvyz],k/',
         '/s,t.+/', // @see barnulástok
         '/r,t.+/',
     );
@@ -318,6 +320,7 @@ class Wordform
     public $is_btmr = false; 
     public $is_opening = false; 
     public $is_amny = NULL;
+    public $is_volatile = false; 
 
     public function __construct($lemma, $ortho=NULL)
     {
@@ -368,6 +371,11 @@ class Wordform
         if (!is_null($this->is_amny))
             return $this->is_amny;
         return true;
+    }
+
+    public function isVolatile()
+    {
+        return $this->is_volatile;
     }
 
     /** @todo use lexicon is_birtokos_i
@@ -469,6 +477,7 @@ class PossessiveSuffixum extends Suffixum implements PersNum
         $obj->person = $person;
         $obj->is_opening = true;
         $obj->is_vtmr = true;
+        $obj->is_volatile = true;
         return $obj;
     }
 
@@ -497,6 +506,7 @@ class Nomen extends Wordform implements NominalCases, VirtualNominalCases
     public $person = 3;
 
     public $is_jaje = NULL;
+    public $lemma2 = '';
 
     /** Hint.
      */
@@ -511,6 +521,13 @@ class Nomen extends Wordform implements NominalCases, VirtualNominalCases
         if (preg_match('/[bcdfghjklmnprstvxz]{2,}$/', $this->ortho))
             return true; // általában
         return false; // unknown
+    }
+
+    /** Nomen is volatile only if not yet inflexed.
+     */
+    public function isVolatile()
+    {
+        return $this->is_volatile && ($this->lemma === $this->ortho);
     }
 
     public function & appendSuffix($suffix)
@@ -913,10 +930,44 @@ class GFactory
 
     // @todo not full list
     // not opening e.g.: gáz bűz rés
-    public static $N_opening_list = array('út', 'nyár', 'ház', 'tűz', 'víz', 'föld', 'zöld', 'nyúl', 'híd', 'nyíl');
+    public static $N_opening_list = array('út', 'nyár', 'ház', 'tűz', 'víz', 'föld', 'zöld', 'nyúl', 'híd', 'nyíl', 'bátor', 'ajak', 'kazal', 'ló', 'hó', 'fű', );
 
     // @todo not full list
     public static $N_jaje_list = array('nagy', 'pad', 'sárkány', 'kupec', 'kortes', 'macesz', 'trapéz', );
+
+    // @todo is full list? latin/english name?
+    public static $N_volatile_list = array(
+        'ajak' => 'ajk',
+        'bagoly' => 'bagly',
+        'bajusz' => 'bajsz',
+        'bátor' => 'bátr',
+        'dolog' => 'dolg',
+        'haszon' => 'haszn',
+        'izom' => 'izm',
+        'kazal' => 'kazl',
+        'lepel' => 'lepl',
+        'majom' => 'majm',
+        'piszok' => 'piszk',
+        'torony' => 'torny',
+        'tücsök' => 'tücsk',
+        'tükör' => 'tükr',
+        'tülök' => 'tülk',
+        'vacak' => 'vack',
+        'álom' => 'álm',
+        // @todo v-vel bővülő tövek, nem teljes lista
+        'ló' => 'lov',
+        'fű' => 'füv',
+        'hó' => 'hav',
+        // @todo hangátvetéses váltakozás, nem teljes lista
+        'teher' => 'terh',
+        'pehely' => 'pelyh',
+        'kehely' => 'kelyh',
+        // @todo volatile verbs
+        //'szerez' => 'szerző',
+        //'töröl' => 'törlő',
+        //'becsül' => 'becsl',
+        //'őriz' => 'őrz',
+    );
 
     public static function parseNP($string)
     {
@@ -926,6 +977,9 @@ class GFactory
         $obj->is_opening = in_array($string, self::$N_opening_list, true);
         if (in_array($string, self::$N_jaje_list, true))
             $obj->is_jaje = true;
+        $obj->is_volatile = isset(self::$N_volatile_list[$string]);
+        if ($obj->is_volatile)
+            $obj->lemma2 = self::$N_volatile_list[$string];
         return $obj;
     }
 
@@ -934,9 +988,9 @@ class GFactory
         '_Vk', // többesjel
         '_Vt', // tárgyrag
         // birtokos személyragok
-        'As', // melléknévképző
+        'Vs', // melléknévképző
         'Az', // igeképző
-        'cskA', // kicsinyítő képző
+        '_VcskA', // kicsinyítő képző
     );
 
     // @todo not full list
@@ -967,6 +1021,18 @@ class GFactory
         'szOr', 'sÁg', 'i', 'ként',
     );
 
+    // @todo is full list? latin/english name?
+    public static $suffixum_volatile_list = array(
+        '_Vt', // tárgyrag
+        'On', // Superessivus
+        '_Vk', // többesjel
+        // birtokos személyragok
+        'VstUl',
+        'Vs', // melléknévképző
+        'Vnként',
+        '_VcskA', // kicsinyítő képző
+    );
+
     public static function parseSuffixum($string)
     {
         $obj = new Suffixum($string);
@@ -974,6 +1040,7 @@ class GFactory
         $obj->is_btmr = in_array($string, self::$suffixum_btmr_list, true);
         $obj->is_opening = in_array($string, self::$suffixum_opening_list, true);
         $obj->is_amny = !in_array(string, self::$suffixum_not_AMNY_right_list);
+        $obj->is_volatile = in_array($string, self::$suffixum_volatile_list);
         return $obj;
     }
 

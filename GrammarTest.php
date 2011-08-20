@@ -174,13 +174,50 @@ class EmberTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('low', Phonology::getVow('út'));
     }
 
+    public function testStemTypes()
+    {
+        $this->assertTrue(GFactory::parseNP('ház')->isOpening());
+        $this->assertTrue(GFactory::parseV('zöldül')->isOpening());
+        $this->assertTrue(GFactory::parseV('zöldül')->appendSuffix(GFactory::parseSuffixum('Ás'))->isOpening());
+        $this->assertTrue(GFactory::parseV('zöldül')->appendSuffix(GFactory::parseSuffixum('Ás'))->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->isOpening());
+
+        $this->assertTrue(GFactory::parseNP('bátor')->isVolatile());
+        $this->assertTrue(GFactory::parseSuffixum('_Vk')->isVolatile(), 'plural suffixum is volatile');
+        $this->assertEquals('ajkak',  (string) GFactory::parseNP('ajak')->makePlural());
+        $this->assertEquals('baglyok', (string) GFactory::parseNP('bagoly')->makePlural());
+        $this->assertEquals('bajszok',  (string) GFactory::parseNP('bajusz')->makePlural());
+        $this->assertEquals('bátrak',  (string) GFactory::parseNP('bátor')->makePlural());
+        $this->assertEquals('dolgok',  (string) GFactory::parseNP('dolog')->makePlural());
+        $this->assertEquals('hasznok', (string) GFactory::parseNP('haszon')->makePlural());
+        $this->assertEquals('izmok',   (string) GFactory::parseNP('izom')->makePlural());
+        $this->assertEquals('kazlak',  (string) GFactory::parseNP('kazal')->makePlural());
+        $this->assertEquals('leplek',  (string) GFactory::parseNP('lepel')->makePlural());
+        $this->assertEquals('majmok',  (string) GFactory::parseNP('majom')->makePlural());
+        $this->assertEquals('piszkok', (string) GFactory::parseNP('piszok')->makePlural());
+        $this->assertEquals('tornyok', (string) GFactory::parseNP('torony')->makePlural());
+        $this->assertEquals('tücskök', (string) GFactory::parseNP('tücsök')->makePlural());
+        $this->assertEquals('tükrök',  (string) GFactory::parseNP('tükör')->makePlural());
+        $this->assertEquals('tülkök',  (string) GFactory::parseNP('tülök')->makePlural());
+        $this->assertEquals('vackok',  (string) GFactory::parseNP('vacak')->makePlural());
+        $this->assertEquals('álmok',   (string) GFactory::parseNP('álom')->makePlural());
+
+        $this->assertEquals('lovak',   (string) GFactory::parseNP('ló')->makePlural());
+        $this->assertEquals('havak',   (string) GFactory::parseNP('hó')->makePlural());
+        $this->assertEquals('füvek',   (string) GFactory::parseNP('fű')->makePlural());
+
+        $this->assertEquals('terhek',   (string) GFactory::parseNP('teher')->makePlural());
+        $this->assertEquals('pelyhek',   (string) GFactory::parseNP('pehely')->makePlural());
+        $this->assertEquals('kelyhek',   (string) GFactory::parseNP('kehely')->makePlural());
+
+        // @todo verb szerző szerez
+        // @todo verb törlő töröl
+        
+    }
+
     public function testPhonology()
     {
         $this->assertEquals('emberke', (string) GFactory::parseNP('ember')->appendSuffix(GFactory::parseSuffixum('kA')));
         $this->assertEquals('barnulásotoktól', (string) GFactory::parseV('barnul')->appendSuffix(GFactory::parseSuffixum('Ás'))->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('tÓl')));
-        $this->assertTrue(GFactory::parseV('zöldül')->isOpening());
-        $this->assertTrue(GFactory::parseV('zöldül')->appendSuffix(GFactory::parseSuffixum('Ás'))->isOpening());
-        $this->assertTrue(GFactory::parseV('zöldül')->appendSuffix(GFactory::parseSuffixum('Ás'))->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->isOpening());
         $this->assertEquals('zöldülésetek', (string) GFactory::parseV('zöldül')->appendSuffix(GFactory::parseSuffixum('Ás'))->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2)));
         $this->assertEquals('zöldülésetektől', (string) GFactory::parseV('zöldül')->appendSuffix(GFactory::parseSuffixum('Ás'))->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->appendSuffix(GFactory::parseSuffixum('tÓl')));
         // @todo ld. 309. o.
