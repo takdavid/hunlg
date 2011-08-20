@@ -20,233 +20,140 @@ class EmberTest extends PHPUnit_Framework_TestCase
 
     public function testWordForm()
     {
-        $ember = parseNP('ember');
-
-        $actual = $ember->makeNominativus()->vow;
-        $expected = $ember->vow;
-        $this->assertEquals($expected, $actual);
+        $N = parseNP('ember');
+        $this->assertEquals($N->vow, $N->makeNominativus()->vow);
 
     }
 
     public function testPhonology()
     {
-        $ember = parseNP('ember');
+        $N = parseNP('ember');
+        $N->addSuffix('kA');
+        $this->assertEquals('emberke', (string) $N);
 
-        $ember->addSuffix('kA');
-        $actual = (string) $ember;
-        $expected = 'emberke';
-        $this->assertEquals($expected, $actual);
+        $this->assertEquals('00hhhhllh', Phonology::getVowSeq('árvíztűrő tükörfúrógép'));
 
-        $actual = Phonology::getVowSeq('árvíztűrő tükörfúrógép');
-        $expected = '00hhhhllh';
-        $this->assertEquals($expected, $actual);
+        $this->assertEquals('high', Phonology::getVow('ember'));
+        $this->assertEquals('opening', Phonology::getVow('ház'));
+        $this->assertEquals('low', Phonology::getVow('út'));
 
-        $actual = Phonology::getVow('ember');
-        $expected = 'high';
-        $this->assertEquals($expected, $actual);
+        $this->assertEquals(true , Phonology::getPropagatedI('ember'), 'ember');
+        $this->assertEquals(false, Phonology::getPropagatedI('ház'), 'ház');
+        $this->assertEquals(true , Phonology::getPropagatedI('föld'), 'föld');
+        $this->assertEquals(true , Phonology::getPropagatedI('kert'), 'kert');
+        $this->assertEquals(true , Phonology::getPropagatedI('kéz'), 'kéz');
 
-        $actual = Phonology::getVow('ház');
-        $expected = 'opening';
-        $this->assertEquals($expected, $actual);
+        $this->assertEquals(false, Phonology::getPropagatedU('ház'), 'ház');
+        $this->assertEquals(false, Phonology::getPropagatedU('kert'), 'kert');
+        $this->assertEquals(true , Phonology::getPropagatedU('föld'), 'föld');
+        $this->assertEquals(false, Phonology::getPropagatedU('kéz'), 'kéz');
 
-        $actual = Phonology::getVow('út');
-        $expected = 'low';
-        $this->assertEquals($expected, $actual);
+        $this->assertEquals(false, Phonology::needSuffixI('ház'), 'ház');
+        $this->assertEquals(true , Phonology::needSuffixI('kert'), 'kert');
+        $this->assertEquals(true , Phonology::needSuffixI('föld'), 'föld');
+        $this->assertEquals(true , Phonology::needSuffixI('tök'), 'tök');
+        $this->assertEquals(true , Phonology::needSuffixI('kéz'), 'kéz');
 
+        $this->assertEquals(false, Phonology::needSuffixU('ház'), 'ház');
+        $this->assertEquals(false, Phonology::needSuffixU('kert'), 'kert');
+        $this->assertEquals(true , Phonology::needSuffixU('föld'), 'föld');
+        $this->assertEquals(true , Phonology::needSuffixU('tök'), 'tök');
+        $this->assertEquals(false, Phonology::needSuffixU('kéz'), 'kéz');
+
+        $this->assertEquals(false, Phonology::getPropagatedI('út'), 'út');
+        $this->assertEquals(true , Phonology::getPropagatedI('kövér'), 'kövér');
+        $this->assertEquals(true , Phonology::getPropagatedI('sofőr'), 'sofőr');
+        $this->assertEquals(false, Phonology::getPropagatedI('kőfal'), 'kőfal');
+        $this->assertEquals(false, Phonology::getPropagatedI('bika'), 'bika');
+        $this->assertEquals(false, Phonology::getPropagatedI('nüansz'), 'nüansz');
     }
 
     public function testNominalCases()
     {
-        $ember = parseNP('ember');
+        unset($N);
+        $N = parseNP('ember');
+        $this->assertEquals('ember', (string) $N->makeNominativus());
+        $this->assertEquals('emberek', (string) $N->makePlural());
+        $this->assertEquals('embert', (string) $N->makeAccusativus());
+        $this->assertEquals('embereket', (string) $N->makePlural()->makeAccusativus());
+        $this->assertEquals('embereket', (string) $N->makeAccusativus()->makePlural());
+        $this->assertEquals('emberért', (string) $N->makeCausalisFinalis());
+        $this->assertEquals('emberekért', (string) $N->makePlural()->makeCausalisFinalis());
+        $this->assertEquals('miatta', (string) $N->makeCausalis()->pronominalize());
+        $this->assertEquals('embernek', (string) $N->makeDativus());
+        $this->assertEquals('embereknek', (string) $N->makePlural()->makeDativus());
+        $this->assertEquals('embereknek', (string) $N->makePlural()->makeGenitivus());
+        $this->assertEquals('emberrel', (string) $N->makeInstrumentalis());
+        $this->assertEquals('emberekkel', (string) $N->makePlural()->makeInstrumentalis());
+        $this->assertEquals('emberré', (string) $N->makeTranslativusFactivus());
+        $this->assertEquals('emberként', (string) $N->makeFormativus());
+        $this->assertEquals('emberül', (string) $N->makeEssivusFormalis());
+        $this->assertEquals('emberbe', (string) $N->makeIllativus());
+        $this->assertEquals('emberben', (string) $N->makeInessivus());
+        $this->assertEquals('emberből', (string) $N->makeElativus());
+        $this->assertEquals('emberre', (string) $N->makeSublativus());
+        $this->assertEquals('emberen', (string) $N->makeSuperessivus());
+        $this->assertEquals('emberről', (string) $N->makeDelativus());
+        $this->assertEquals('emberhez', (string) $N->makeAllativus());
+        $this->assertEquals('embernél', (string) $N->makeAdessivus());
+        $this->assertEquals('embertől', (string) $N->makeAblativus());
+        $this->assertEquals('emberig', (string) $N->makeTerminativus());
 
-        $actual = (string) $ember->makeNominativus();
-        $expected = 'ember';
-        $this->assertEquals($expected, $actual);
+        unset($N);
+        $N = parseNP('út');
+        $this->assertEquals('út', (string) $N->makeNominativus());
+        //$this->assertEquals('utak', (string) $N->makePlural());
+        //$this->assertEquals('utat', (string) $N->makeAccusativus());
+        $this->assertEquals('útért', (string) $N->makeCausalisFinalis());
+        $this->assertEquals('útnak', (string) $N->makeDativus());
+        $this->assertEquals('úttal', (string) $N->makeInstrumentalis());
+        $this->assertEquals('úttá', (string) $N->makeTranslativusFactivus());
+        $this->assertEquals('útként', (string) $N->makeFormativus());
+        $this->assertEquals('útul', (string) $N->makeEssivusFormalis());
+        $this->assertEquals('útba', (string) $N->makeIllativus());
+        $this->assertEquals('útban', (string) $N->makeInessivus());
+        $this->assertEquals('útból', (string) $N->makeElativus());
+        $this->assertEquals('útra', (string) $N->makeSublativus());
+        $this->assertEquals('úton', (string) $N->makeSuperessivus());
+        $this->assertEquals('útról', (string) $N->makeDelativus());
+        $this->assertEquals('úthoz', (string) $N->makeAllativus());
+        $this->assertEquals('útnál', (string) $N->makeAdessivus());
+        $this->assertEquals('úttól', (string) $N->makeAblativus());
+        $this->assertEquals('útig', (string) $N->makeTerminativus());
 
-        $actual = (string) $ember->makePlural();
-        $expected = 'emberek';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makeAccusativus();
-        $expected = 'embert';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makePlural()->makeAccusativus();
-        $expected = 'embereket';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makeAccusativus()->makePlural();
-        $expected = 'embereket';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makeCausalisFinalis();
-        $expected = 'emberért';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makePlural()->makeCausalisFinalis();
-        $expected = 'emberekért';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makeCausalis()->pronominalize();
-        $expected = 'miatta';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makeDativus();
-        $expected = 'embernek';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makePlural()->makeDativus();
-        $expected = 'embereknek';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makePlural()->makeGenitivus();
-        $expected = 'embereknek';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makeInstrumentalis();
-        $expected = 'emberrel';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makePlural()->makeInstrumentalis();
-        $expected = 'emberekkel';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makeTranslativusFactivus();
-        $expected = 'emberré';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makeFormativus();
-        $expected = 'emberként';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makeEssivusFormalis();
-        $expected = 'emberül';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makeIllativus();
-        $expected = 'emberbe';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makeElativus();
-        $expected = 'emberből';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makeSublativus();
-        $expected = 'emberre';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makeSuperessivus();
-        $expected = 'emberen';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makeDelativus();
-        $expected = 'emberről';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makeAllativus();
-        $expected = 'emberhez';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makeAdessivus();
-        $expected = 'embernél';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makeAblativus();
-        $expected = 'embertől';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makeTerminativus();
-        $expected = 'emberig';
-        $this->assertEquals($expected, $actual);
-
-        $ut = parseNP('út');
-
-        $actual = (string) $ut->makeCausalisFinalis();
-        $expected = 'útért';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ut->makeInstrumentalis();
-        $expected = 'úttal';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ut->makeDativus();
-        $expected = 'útnak';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ut->makeFormativus();
-        $expected = 'útként';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ut->makeEssivusFormalis();
-        $expected = 'útul';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ut->makeIllativus();
-        $expected = 'útba';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ut->makeInessivus();
-        $expected = 'útban';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ut->makeElativus();
-        $expected = 'útból';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ut->makeSublativus();
-        $expected = 'útra';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ut->makeDelativus();
-        $expected = 'útról';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ut->makeAdessivus();
-        $expected = 'útnál';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ut->makeAblativus();
-        $expected = 'úttól';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ut->makeTerminativus();
-        $expected = 'útig';
-        $this->assertEquals($expected, $actual);
+        unset($N);
+        $N = parseNP('föld');
+        $this->assertEquals('föld', (string) $N->makeNominativus());
+        $this->assertEquals('földek', (string) $N->makePlural());
+        //$this->assertEquals('földet', (string) $N->makeAccusativus());
+        $this->assertEquals('földért', (string) $N->makeCausalisFinalis());
+        $this->assertEquals('földnek', (string) $N->makeDativus());
+        $this->assertEquals('földdel', (string) $N->makeInstrumentalis());
+        $this->assertEquals('földdé', (string) $N->makeTranslativusFactivus());
+        $this->assertEquals('földön', (string) $N->makeSuperessivus());
+        $this->assertEquals('földhöz', (string) $N->makeAllativus());
 
     }
 
     public function testVirtualNominalCases()
     {
-        $ember = parseNP('ember');
+        unset($N);
+        $N = parseNP('ember');
+        $this->assertEquals('embernek', (string) $N->makeGenitivus());
+        $this->assertEquals('ember miatt', (string) $N->makeCausalis());
+        $this->assertEquals('emberen keresztül', (string) $N->makePerlativus());
+        $this->assertEquals('emberen át', (string) $N->makeProlativus());
+        $this->assertEquals('emberen át', (string) $N->makeVialis());
+        $this->assertEquals('ember alatt', (string) $N->makeSubessivus());
+        $this->assertEquals('ember mentén', (string) $N->makeProsecutivus());
 
-        $actual = (string) $ember->makeGenitivus();
-        $expected = 'embernek';
-        $this->assertEquals($expected, $actual);
+        unset($N);
+        $N = parseNP('föld');
+        $this->assertEquals('földön keresztül', (string) $N->makePerlativus());
 
-        $actual = (string) $ember->makeCausalis();
-        $expected = 'ember miatt';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makePerlativus();
-        $expected = 'emberen keresztül';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makeProlativus();
-        $expected = 'emberen át';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makeVialis();
-        $expected = 'emberen át';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makeSubessivus();
-        $expected = 'ember alatt';
-        $this->assertEquals($expected, $actual);
-
-        $actual = (string) $ember->makeProsecutivus();
-        $expected = 'ember mentén';
-        $this->assertEquals($expected, $actual);
-
+        unset($N);
+        $N = parseNP('út');
+        $this->assertEquals('úton keresztül', (string) $N->makePerlativus());
     }
 
 }

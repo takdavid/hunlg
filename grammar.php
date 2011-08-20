@@ -45,44 +45,130 @@ mb_internal_encoding("UTF-8");
 
 class Phonology
 {
+    /** 
+     * [-A]
+     * [-U]
+     * [-I]
+     * [12]
+     * [-t] is transparent for I
+     */
+    public static $phonocode = array(
+        'a' => 'A--1-',
+        'á' => 'A--2-',
+        'e' => 'A-I1-',
+        'é' => 'A-I2t',
+        'i' => '--I1t',
+        'í' => '--I2t',
+        'u' => '-U-1-',
+        'ú' => '-U-2-',
+        'ü' => '-UI2-',
+        'ű' => '-UI2-',
+        'o' => 'AU-1-',
+        'ó' => 'AU-2-',
+        'ö' => 'AUI1-',
+        'ő' => 'AUI2-',
+    );
+
+    public static $skeletoncode = array(
+        'a' => 'V',
+        'á' => 'V',
+        'e' => 'V',
+        'é' => 'V',
+        'i' => 'V',
+        'í' => 'V',
+        'u' => 'V',
+        'ú' => 'V',
+        'ü' => 'V',
+        'ű' => 'V',
+        'o' => 'V',
+        'ó' => 'V',
+        'ö' => 'V',
+        'ő' => 'V',
+    );
+
+    public static function isVowel($chr)
+    {
+        return (isset(self::$skeletoncode[$chr]) && self::$skeletoncode[$chr] === 'V');
+    }
+
+    public static function getPropagatedX($X_pattern, $t_pattern, $actual)
+    {
+        $len = mb_strlen($actual);
+        $is_propagated = NULL;
+        for ($i = 0; $i < $len; $i++)
+        {
+            $chr = mb_substr($actual, $i, 1);
+            $phonocode = @ self::$phonocode[$chr];
+            if (!$phonocode)
+                continue;
+            if ($t_pattern)
+            {
+                $is_t = (bool) preg_match($t_pattern, $phonocode);
+                if (!$is_t || is_null($is_propagated))
+                    $is_propagated = (bool) preg_match($X_pattern, $phonocode);
+            }
+            else
+                $is_propagated = (bool) preg_match($X_pattern, $phonocode);
+        }
+        return $is_propagated;
+    }
+
+    /** Kerekségi harmónia
+     */
+    public static function needSuffixU($actual)
+    {
+        $A = self::getPropagatedA($actual);
+        $U = self::getPropagatedU($actual);
+        $I = self::getPropagatedI($actual);
+        if ($A && $I && $U)
+            return true;
+        if ($A && $I && !$U)
+            return false;
+        if ($A && !$I && $U)
+            return true;
+        if ($A && !$I && !$U)
+            return false;
+        return $U;
+    }
+
+    /** Elölségi harmónia
+     */
+    public static function needSuffixI($actual)
+    {
+        return self::getPropagatedI($actual);
+    }
+
+    public static function getPropagatedA($actual)
+    {
+        return self::getPropagatedX('/^A/', '', $actual);
+    }
+
+    public static function getPropagatedU($actual)
+    {
+        return self::getPropagatedX('/^.U/', '', $actual);
+    }
+
+    public static function getPropagatedI($actual)
+    {
+        return self::getPropagatedX('/^..I/', '/^....t/', $actual);
+    }
 
     public static function addSuffix($nomen, $suffixcode)
     {
-        if ($suffixcode === 'vAl')
+        if (substr($suffixcode, 0, 1) === 'v')
         {
             $last = self::getLastCons($nomen->actual);
-            if ($nomen->vow === 'low')
-                return $nomen->actual.$last.'al';
-            if ($nomen->vow === 'high')
-                return $nomen->actual.$last.'el';
-        }
-        if ($suffixcode === 'kA')
-        {
-            if ($nomen->vow === 'low')
-                return $nomen->actual.'ka';
-            else
-                return $nomen->actual.'ke';
+            $suffixcode = $last.substr($suffixcode, 1);
         }
 
         $vowelmaps = array(
-            'low' => array(
-                'A' => 'a',
-                'Á' => 'á',
-                'Ó' => 'ó',
-                'U' => 'u',
-                'Ú' => 'ú',
-            ),
-            'high' => array(
-                'A' => 'e',
-                'Á' => 'é',
-                'Ó' => 'ő',
-                'U' => 'ü',
-                'Ú' => 'ű',
-            ),
-            // V a o e ö
-            // O   o e ö
+            '--' => array( 'A' => 'a', 'Á' => 'á', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'O' => 'o', 'V' => 'a'),
+            'U-' => array( 'A' => 'a', 'Á' => 'á', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'O' => 'o', 'V' => 'o'),
+            '-I' => array( 'A' => 'e', 'Á' => 'é', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'O' => 'e', 'V' => 'e'),
+            'UI' => array( 'A' => 'e', 'Á' => 'é', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'O' => 'ö', 'V' => 'ö'),
         );
-        $vowelmap = $vowelmaps[$nomen->vow];
+        $nomen_phonocode = (Phonology::needSuffixU($nomen->actual) ? 'U' : '-') . (Phonology::needSuffixI($nomen->actual) ? 'I' : '-');
+        $vowelmap = $vowelmaps[$nomen_phonocode];
         $suffix = '';
         $len = mb_strlen($suffixcode);
         for ($i = 0; $i < $len; $i++)
@@ -171,6 +257,8 @@ class Wordform
 
 }
 
+/** Valid nominal cases in hungarian.
+ */
 interface NominalCases
 {
     public function & makeNominativus();
@@ -193,6 +281,8 @@ interface NominalCases
     public function & makeTerminativus();
 }
 
+/** Invalid (virtual) nominal cases in hungarian.
+ */
 interface VirtualNominalCases
 {
     public function & makeGenitivus();
@@ -208,6 +298,8 @@ interface VirtualNominalCases
     //public function & makeEgressivus();
 }
 
+/** Invalid (virtual) temporal cases in hungarian.
+ */
 interface VirtualTemporalCases
 {
     public function & makeAntessivus();
@@ -290,7 +382,7 @@ class Nomen extends Wordform implements NominalCases, VirtualNominalCases
         {
             $clone = clone $this;
             if ($clone->isPlural())
-                $clone->addSuffix('et');
+                $clone->addSuffix('At');
             else
                 $clone->addSuffix('t');
             $clone->case = 'Accusativus';
@@ -316,7 +408,7 @@ class Nomen extends Wordform implements NominalCases, VirtualNominalCases
 
     public function & makeTranslativusFactivus()
     {
-        return $this->_makeCaseFromNominativusWithSuffix('TranslativusFactivus', 'ré');
+        return $this->_makeCaseFromNominativusWithSuffix('TranslativusFactivus', 'vÁ');
     }
 
     public function & makeFormativus()
@@ -351,7 +443,7 @@ class Nomen extends Wordform implements NominalCases, VirtualNominalCases
 
     public function & makeSuperessivus()
     {
-        return $this->_makeCaseFromNominativusWithSuffix('Superessivus', 'en');
+        return $this->_makeCaseFromNominativusWithSuffix('Superessivus', 'On');
     }
 
     public function & makeDelativus()
@@ -361,7 +453,7 @@ class Nomen extends Wordform implements NominalCases, VirtualNominalCases
 
     public function & makeAllativus()
     {
-        return $this->_makeCaseFromNominativusWithSuffix('Allativus', 'hez');
+        return $this->_makeCaseFromNominativusWithSuffix('Allativus', 'hOz');
     }
 
     public function & makeAdessivus()
@@ -423,12 +515,12 @@ class Nomen extends Wordform implements NominalCases, VirtualNominalCases
 
     public function & makePerlativus()
     {
-        return $this->_makeCaseWithHRHSZ('Perlativus', 'keresztül', 'en');
+        return $this->_makeCaseWithHRHSZ('Perlativus', 'keresztül', 'On');
     }
 
     public function & makeProlativus()
     {
-        return $this->_makeCaseWithHRHSZ('Perlativus', 'át', 'en');
+        return $this->_makeCaseWithHRHSZ('Perlativus', 'át', 'On');
     }
 
     public function & makeVialis()
