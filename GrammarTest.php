@@ -535,15 +535,24 @@ class EmberTest extends PHPUnit_Framework_TestCase
     }
          */
 
-    public function testConjugation()
+    public function testiVerbal()
+    {
+        unset($V);
+        $V = & GFactory::parseV('olvas');
+        $this->assertTrue($V->matchCase('13100'));
+        $this->assertTrue($V->conjugate(1, 1, 1, 0, 0)->matchCase('11100'));
+        $this->assertTrue($V->conjugate(1, 2, 3, 0, 3)->matchCase('.23.[23]'));
+        $this->assertTrue($V->conjugate(3, 2, 1, 0, 0)->matchCase('13100|32100'));
+        $this->assertTrue($V->conjugate(1, 1, 1, -1, 0)->matchCase('..[23]..|...9.'));
+    }
+
+    public function testVerbConjugation()
     {
         unset($V);
         $V = & GFactory::parseV('olvas');
         $this->assertEquals('olvas', (string) $V->getCitationForm());
         $this->assertEquals('olvastál volna', (string) $V->conjugate(1, 2, 2, -1, 0));
         $this->assertEquals('olvastad volna', (string) $V->conjugate(1, 2, 2, -1, 3));
-        //$this->assertEquals('olvass',     (string) $V->conjugate(1, 2, 3, 0, 0));
-        //$this->assertEquals('olvasd',     (string) $V->conjugate(1, 2, 3, 0, 3));
 
         $this->checkConjugation(GFactory::parseV('olvas'), array(
             'olvasok', 'olvasol', 'olvas', 'olvasunk', 'olvastok', 'olvasnak', 
@@ -552,9 +561,16 @@ class EmberTest extends PHPUnit_Framework_TestCase
             'olvastam', 'olvastad', 'olvasta', 'olvastuk', 'olvastátok', 'olvasták', 
             'olvasnék', 'olvasnál', 'olvasna', 'olvasnánk', 'olvasnátok', 'olvasnának', 
             'olvasnám', 'olvasnád', 'olvasná', 'olvasnánk', 'olvasnátok', 'olvasnák', 
-            'olvassak', 'olvassál', 'olvasson', 'olvassunk', 'olvassatok', 'olvassanak', 
-            'olvassam', 'olvassad', 'olvassa', 'olvassuk', 'olvassátok', 'olvassák', 
+            'olvassak', 'olvassál', 'olvasson', 'olvassunk', 'olvassatok', 'olvassanak',  // @todo olvass
+            'olvassam', 'olvassad', 'olvassa', 'olvassuk', 'olvassátok', 'olvassák', // @todo olvasd
         ));
+
+        $this->assertTrue(GFactory::parseV('tesz')->isSZV);
+        $this->assertEquals('teszlek', (string) GFactory::parseV('tesz')->conjugate(1, 1, 1, 0, 2));
+        $this->assertEquals('tettelek', (string) GFactory::parseV('tesz')->conjugate(1, 1, 1, -1, 2));
+        $this->assertEquals('tennélek', (string) GFactory::parseV('tesz')->conjugate(1, 1, 2, 0, 2));
+        $this->assertEquals('tegyelek', (string) GFactory::parseV('tesz')->conjugate(1, 1, 3, 0, 2));
+
 
         $this->checkConjugation(GFactory::parseV('tesz'), array(
             'teszek', 'teszel', 'tesz', 'teszünk', 'tesztek', 'tesznek', 
@@ -566,6 +582,44 @@ class EmberTest extends PHPUnit_Framework_TestCase
             'tegyek', 'tegyél', 'tegyen', 'tegyünk', 'tegyetek', 'tegyenek', 
             'tegyem', 'tegyed', 'tegye', 'tegyük', 'tegyétek', 'tegyék', 
         ));
+
+        $this->checkConjugation(GFactory::parseV('hisz'), array(
+            'hiszek', 'hiszel', 'hisz', 'hiszünk', 'hisztek', 'hisznek', 
+            'hiszem', 'hiszed', 'hiszi', 'hisszük', 'hiszitek', 'hiszik', 
+            'hittem', 'hittél', 'hitt', 'hittünk', 'hittetek', 'hittek', 
+            'hittem', 'hitted', 'hitte', 'hittük', 'hittétek', 'hitték', 
+            'hinnék', 'hinnél', 'hinne', 'hinnénk', 'hinnétek', 'hinnének', 
+            'hinném', 'hinnéd', 'hinné', 'hinnénk', 'hinnétek', 'hinnék', 
+            'higgyek', 'higgyél', 'higgyen', 'higgyünk', 'higgyetek', 'higgyenek', 
+            'higgyem', 'higgyed', 'higgye', 'higgyük', 'higgyétek', 'higgyék', 
+        ));
+
+        $this->checkConjugation(GFactory::parseV('esz'), array(
+            'eszek', 'eszel', 'eszik', 'eszünk', 'esztek', 'esznek', // @todo eszem
+            'eszem', 'eszed', 'eszi', 'esszük', 'eszitek', 'eszik', 
+            'ettem', 'ettél', 'evett', 'ettünk', 'ettetek', 'ettek', 
+            'ettem', 'etted', 'ette', 'ettük', 'ettétek', 'ették', 
+            'ennék', 'ennél', 'enne', 'ennénk', 'ennétek', 'ennének',
+            'enném', 'ennéd', 'enné', 'ennénk', 'ennétek', 'ennék', 
+            'egyek', 'egyél', 'egyen', 'együnk', 'egyetek', 'egyenek', 
+            'egyem', 'egyed', 'egye', 'együk', 'egyétek', 'egyék', 
+        ));
+
+        $this->checkConjugation(GFactory::parseV('isz'), array(
+            'iszok', 'iszol', 'iszik', 'iszunk', 'isztok', 'isznak', // @todo iszom
+            'iszom', 'iszod', 'issza', 'isszuk', 'isszátok', 'isszák', 
+            'ittam', 'ittál', 'ivott', 'ittunk', 'ittatok', 'ittak', 
+            'ittam', 'ittad', 'itta', 'ittuk', 'ittátok', 'itták', 
+            'innék', 'innál', 'inna', 'innánk', 'innátok', 'innának', // @todo innák
+            'innám', 'innád', 'inná', 'innánk', 'innátok', 'innák', 
+            'igyak', 'igyál', 'igyon', 'igyunk', 'igyatok', 'igyanak', 
+            'igyam', 'igyad', 'igya', 'igyuk', 'igyátok', 'igyák', 
+        ));
+
+        $this->assertEquals('űzlek', (string) GFactory::parseV('űz')->conjugate(1, 1, 1, 0, 2));
+        $this->assertEquals('űztelek', (string) GFactory::parseV('űz')->conjugate(1, 1, 1, -1, 2));
+        $this->assertEquals('űznélek', (string) GFactory::parseV('űz')->conjugate(1, 1, 2, 0, 2));
+        $this->assertEquals('űzzelek', (string) GFactory::parseV('űz')->conjugate(1, 1, 3, 0, 2));
 
         $this->checkConjugation(GFactory::parseV('űz'), array(
             'űzök', 'űzöl', 'űz', 'űzünk', 'űztök', 'űznek', 
@@ -588,27 +642,52 @@ class EmberTest extends PHPUnit_Framework_TestCase
             'költöttem', 'költötted', 'költötte', 'költöttük', 'költöttétek', 'költötték', 
             'költenék', 'költenél', 'költene', 'költenénk', 'költenétek', 'költenének', 
             'költeném', 'költenéd', 'költené', 'költenénk', 'költenétek', 'költenék', 
-            //'költsek', 'költsél', 'költsön', 'költsünk', 'költsetek', 'költsenek', // költs
-            //'költsem', 'költsed', 'költse', 'költsük', 'költsétek', 'költsék', // költsd
+            'költsek', 'költsél', 'költsön', 'költsünk', 'költsetek', 'költsenek', // költs
+            'költsem', 'költsed', 'költse', 'költsük', 'költsétek', 'költsék', // költsd
         ));
 
+        $this->assertTrue(GFactory::parseV('lő')->isPlusV);
+
+        $this->assertEquals('lőlek', (string) GFactory::parseV('lő')->conjugate(1, 1, 1, 0, 2));
+        $this->assertEquals('lőttelek', (string) GFactory::parseV('lő')->conjugate(1, 1, 1, -1, 2));
+        $this->assertEquals('lőnélek', (string) GFactory::parseV('lő')->conjugate(1, 1, 2, 0, 2));
+        $this->assertEquals('lőjelek', (string) GFactory::parseV('lő')->conjugate(1, 1, 3, 0, 2));
+
+        $this->checkConjugation(GFactory::parseV('lő'), array(
+            'lövök', 'lősz', 'lő', 'lövünk', 'lőtök', 'lőnek',
+            'lövöm', 'lövöd', 'lövi', 'lőjük', 'lövitek', 'lövik',
+            'lőttem', 'lőttél', 'lőtt', 'lőttünk', 'lőttetek', 'lőttek',
+            'lőttem', 'lőtted', 'lőtte', 'lőttük', 'lőttétek', 'lőtték',
+            'lőnék', 'lőnél', 'lőne', 'lőnénk', 'lőnétek', 'lőnének',
+            'lőném', 'lőnéd', 'lőné', 'lőnénk', 'lőnétek', 'lőnék',
+            'lőjek', 'lőjél', 'lőjön', 'lőjünk', 'lőjetek', 'lőjenek', // @todo lőj
+            'lőjem', 'lőjed', 'lője', 'lőjük', 'lőjétek', 'lőjék', // @todo lődd
+        ));
+
+        $this->checkConjugation(GFactory::parseV('ró'), array(
+            'rovok', 'rósz', 'ró', 'rovunk', 'rótok', 'rónak',
+            'rovom', 'rovod', 'rója', 'rójuk', 'rójátok', 'róják',
+            'róttam', 'róttál', 'rótt', 'róttunk', 'róttatok', 'róttak',
+            'róttam', 'róttad', 'rótta', 'róttuk', 'róttátok', 'rótták',
+            'rónék', 'rónál', 'róna', 'rónánk', 'rónátok', 'rónának',
+            'rónám', 'rónád', 'róná', 'rónánk', 'rónátok', 'rónák',
+            'rójak', 'rójál', 'rójon', 'rójunk', 'rójatok', 'rójanak',
+            'rójam', 'rójad', 'rója', 'rójuk', 'rójátok', 'róják', // @todo ródd
+        ));
+
+        $this->checkConjugation(GFactory::parseV('alsz'), array(
+            'alszok', 'alszol', 'alszik', 'alszunk', 'alszotok', 'alszanak',
+            'alszom', 'alszod', 'alussza', 'alusszuk', 'alusszátok', 'alusszák',
+            'aludtam', 'aludtál', 'aludt', 'aludtunk', 'aludtatok', 'aludtak',
+            'aludtam', 'aludtad', 'aludta', 'aludtuk', 'aludtátok', 'aludták',
+            'aludnék', 'aludnál', 'aludna', 'aludnánk', 'aludnátok', 'aludnának',
+            'aludnám', 'aludnád', 'aludná', 'aludnánk', 'aludnátok', 'aludnák',
+            'aludjak', 'aludjál', 'aludjon', 'aludjunk', 'aludjatok', 'aludjanak',
+            'aludjam', 'aludjad', 'aludja', 'aludjuk', 'aludjátok', 'aludják',
+        ));
         /*
         @todo vár ül ért bont költ
         eszik
-
-        lövök
-        lősz
-        lő
-        lövünk
-        lőtök
-        lőnek
-
-        lövöm
-        lövöd
-        lövi
-        lőjük
-        lövitek
-        lövik
 
         //sz/v, full list
         lesz
