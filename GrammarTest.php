@@ -25,10 +25,35 @@ class EmberTest extends PHPUnit_Framework_TestCase
 
     }
 
+    public function testLexikon()
+    {
+        unset($N);
+        $N = parseNP('ember');
+        $this->assertFalse($N->isVTMR(), 'ember is not VTMR');
+
+        unset($N);
+        $N = parseNP('út');
+        $this->assertTrue($N->isVTMR(), 'út is VTMR');
+
+        unset($su);
+        $su = parseSuffixum('_Vk');
+        $this->assertTrue($su->isVTMR(), 'plural suffixum is VTMR');
+
+        $this->assertEquals('aktivista', (string) parseNP('aktív')->appendSuffix(parseSuffixum('ista')));
+        $this->assertEquals('aktivizál', (string) parseNP('aktív')->appendSuffix(parseSuffixum('izál')));
+        $this->assertEquals('aktivizmus', (string) parseNP('aktív')->appendSuffix(parseSuffixum('izmus')));
+        $this->assertEquals('aktivitás', (string) parseNP('aktív')->appendSuffix(parseSuffixum('itás')));
+        $this->assertEquals('miniatürizál', (string) parseNP('miniatűr')->appendSuffix(parseSuffixum('izál')));
+        $this->assertEquals('urizál', (string) parseNP('úr')->appendSuffix(parseSuffixum('izál')));
+        $this->assertEquals('fuzionál', (string) parseNP('fúzió')->appendSuffix(parseSuffixum('nál')));
+        $this->assertEquals('szlavista', (string) parseNP('szláv')->appendSuffix(parseSuffixum('ista')));
+        $this->assertEquals('privatizál', (string) parseNP('privát')->appendSuffix(parseSuffixum('izál')));
+    }
+
     public function testPhonology()
     {
-        $N = parseNP('ember');
-        $N->addSuffix('kA');
+        unset($N);
+        $N = parseNP('ember')->appendSuffix(parseSuffixum('kA'));
         $this->assertEquals('emberke', (string) $N);
 
         $this->assertEquals('00hhhhllh', Phonology::getVowSeq('árvíztűrő tükörfúrógép'));
@@ -76,7 +101,6 @@ class EmberTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('emberek', (string) $N->makePlural());
         $this->assertEquals('embert', (string) $N->makeAccusativus());
         $this->assertEquals('embereket', (string) $N->makePlural()->makeAccusativus());
-        $this->assertEquals('embereket', (string) $N->makeAccusativus()->makePlural());
         $this->assertEquals('emberért', (string) $N->makeCausalisFinalis());
         $this->assertEquals('emberekért', (string) $N->makePlural()->makeCausalisFinalis());
         $this->assertEquals('miatta', (string) $N->makeCausalis()->pronominalize());
@@ -102,8 +126,8 @@ class EmberTest extends PHPUnit_Framework_TestCase
         unset($N);
         $N = parseNP('út');
         $this->assertEquals('út', (string) $N->makeNominativus());
-        //$this->assertEquals('utak', (string) $N->makePlural());
-        //$this->assertEquals('utat', (string) $N->makeAccusativus());
+        $this->assertEquals('utak', (string) $N->makePlural());
+        $this->assertEquals('utat', (string) $N->makeAccusativus());
         $this->assertEquals('útért', (string) $N->makeCausalisFinalis());
         $this->assertEquals('útnak', (string) $N->makeDativus());
         $this->assertEquals('úttal', (string) $N->makeInstrumentalis());
@@ -122,10 +146,34 @@ class EmberTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('útig', (string) $N->makeTerminativus());
 
         unset($N);
+        $N = parseNP('nyár');
+        $this->assertEquals('nyár', (string) $N->makeNominativus());
+        $this->assertEquals('nyarak', (string) $N->makePlural());
+        $this->assertEquals('nyarat', (string) $N->makeAccusativus());
+
+        unset($N);
+        $N = parseNP('ház');
+        $this->assertEquals('ház', (string) $N->makeNominativus());
+        $this->assertEquals('házak', (string) $N->makePlural());
+        $this->assertEquals('házat', (string) $N->makeAccusativus());
+
+        unset($N);
+        $N = parseNP('gáz');
+        $this->assertEquals('gáz', (string) $N->makeNominativus());
+        $this->assertEquals('gázok', (string) $N->makePlural());
+        $this->assertEquals('gázt', (string) $N->makeAccusativus());
+
+        unset($N);
+        $N = parseNP('tök');
+        $this->assertEquals('tök', (string) $N->makeNominativus());
+        $this->assertEquals('tökök', (string) $N->makePlural());
+        $this->assertEquals('tököt', (string) $N->makeAccusativus());
+
+        unset($N);
         $N = parseNP('föld');
         $this->assertEquals('föld', (string) $N->makeNominativus());
         $this->assertEquals('földek', (string) $N->makePlural());
-        //$this->assertEquals('földet', (string) $N->makeAccusativus());
+        $this->assertEquals('földet', (string) $N->makeAccusativus());
         $this->assertEquals('földért', (string) $N->makeCausalisFinalis());
         $this->assertEquals('földnek', (string) $N->makeDativus());
         $this->assertEquals('földdel', (string) $N->makeInstrumentalis());
