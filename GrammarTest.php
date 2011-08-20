@@ -1053,10 +1053,12 @@ class EmberTest extends PHPUnit_Framework_TestCase
     {
 
         unset($F);
-        $F = & GFactory::createCaseframe(); //, array('S' => 'Nominativus', 'O' => 'Accusativus', '1' => 'Sublativus'));
-        //$F->setArg('S', GFactory::parseNP('valaki'));
-        //$F->setArg('O', GFactory::parseNP('valami'));
-        //$F->setArg('1', GFactory::parseNP('valaki'));
+        $F = & GFactory::createCaseframe(array(
+            'V' => array('Verbum', 'mond'),
+            'S' => array('Nomen', 'Nominativus'),
+            'O' => array('Nomen', 'Accusativus'),
+            '1' => array('Nomen', 'Sublativus'),
+        ));
         $F->defArg('S', GFactory::getSyntaxAction('makeCase', 'Nominativus'));
         $F->defArg('O', GFactory::getSyntaxAction('makeCase', 'Accusativus'));
         $F->defArg('1', GFactory::getSyntaxAction('makeCase', 'Sublativus'));
@@ -1070,7 +1072,31 @@ class EmberTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('valaki mond valamit valakire', (string) $F);
 
         unset($F);
-        $F = & GFactory::createCaseframe();
+        $F = & GFactory::createCaseframe(array(
+            'V' => array('Verbum', 'elmond'), // @todo mond, és igekötő kezelése bent
+            'Rp' => array('Particle', 'el'),
+            'S' => array('Nomen', 'Nominativus'),
+            'O' => array('Nomen', 'Accusativus'),
+            '1' => array('Nomen', 'Dativus'),
+        ));
+        $F->defArg('S', GFactory::getSyntaxAction('makeCase', 'Nominativus'));
+        $F->defArg('O', GFactory::getSyntaxAction('makeCase', 'Accusativus'));
+        $F->defArg('1', GFactory::getSyntaxAction('makeCase', 'Dativus'));
+        $this->assertEquals('valaki', (string) $F->makeArg('S', GFactory::parseNP('valaki')));
+        $this->assertEquals('elmond', (string) $F->makeArg('V', GFactory::parseV('elmond')));
+        $this->assertEquals('valamit', (string) $F->makeArg('O', GFactory::parseNP('valami')));
+        $this->assertEquals('valakinek', (string) $F->makeArg('1', GFactory::parseNP('valaki')));
+        $F->relorder = 'VSO12';
+        $this->assertEquals('elmond valaki valamit valakinek', (string) $F);
+        $F->relorder = 'SVO12';
+        $this->assertEquals('valaki elmond valamit valakinek', (string) $F);
+
+        unset($F);
+        $F = & GFactory::createCaseframe(array(
+            'V' => array('Verbum', 'ágál'),
+            'S' => array('Nomen', 'Nominativus'),
+            '1' => array('ADVP_NU', 'ellen'),
+        ));
         $F->defArg('S', GFactory::getSyntaxAction('makeCase', 'Nominativus'));
         $F->defArg('1', GFactory::getSyntaxAction('makeNU', 'ellen')); // @deprecated
         $F->makeArg('S', GFactory::parseNP('valaki'));
@@ -1082,16 +1108,24 @@ class EmberTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('valami ellen ágál valaki', (string) $F);
 
         unset($F);
-        $F = & GFactory::createCaseframe();
+        $F = & GFactory::createCaseframe(array(
+            'V' => array('Verbum', 'kardoskod'),
+            'S' => array('Nomen', 'Nominativus'),
+            '1' => array('ADVP_NU', 'mellett'),
+        ));
         $F->defArg('S', GFactory::getSyntaxAction('makeCase', 'Nominativus'));
         $F->defArg('1', new SyntaxActionMakeArg(new ADVP_NU(GFactory::parseNP('mellett'), $NULL)));
         $F->makeArg('S', GFactory::parseNP('valaki'));
-        $F->makeArg('V', GFactory::parseV('kardoskodik'));
+        $F->makeArg('V', GFactory::parseV('kardoskod'));
         $F->makeArg('1', GFactory::parseNP('valami'));
         $F->relorder = 'VSO12';
         $this->assertEquals('kardoskodik valaki valami mellett', (string) $F);
         $F->relorder = '1VS';
         $this->assertEquals('valami mellett kardoskodik valaki', (string) $F);
+
+        $T = new SyntaxTree();
+        $T->addArg($F);
+        $this->assertEquals('valami mellett kardoskodik valaki', (string) $T);
 
     }
 

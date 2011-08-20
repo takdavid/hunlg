@@ -2070,17 +2070,22 @@ class Caseframe
 {
 
     public $argdef = array();
+    public $arg_action = array();
     public $args = array();
     public $relorder = 'VSO12'; // standard rel order
 
-    public function __construct()
+    /**
+     * @see msd: szeged_msd_tablak.rtf
+     */
+    public function __construct($description)
     {
         $this->defArg('V', new SyntaxActionVerbDefault($this));
+        $this->argdef = $description;
     }
 
     public function defArg($rel, & $action)
     {
-        $this->argdef[$rel] = & $action;
+        $this->arg_action[$rel] = & $action;
     }
 
     public function setArg($rel, & $arg)
@@ -2088,7 +2093,7 @@ class Caseframe
         if ($this->checkArg($rel, $arg))
             $this->args[$rel] = & $arg;
         else
-            throw new Exception("Invalid or no argdef for '$rel' arg '$arg'");
+            throw new Exception("Invalid or no arg_action for '$rel' arg '$arg' ".var_export($arg, 1));
     }
 
     public function & getArg($rel)
@@ -2096,17 +2101,25 @@ class Caseframe
         return $this->args[$rel];
     }
 
-    // @todo
-    // esetleg legyen külön deklarálható a típus (eset?) 
-    // vagy a SyntaxAction ellenőrizzen is?
     public function checkArg($rel, & $arg)
     {
+        $argdef = @ $this->argdef[$rel];
+        if (empty($argdef))
+            return true;
+        if (get_class($arg) !== $argdef[0])
+            return false;
+        if (get_class($arg) === 'Nomen')
+            if ($arg->case !== $argdef[1])
+                return false;
+        if (get_class($arg) === 'Verbum')
+            if ($arg->lemma !== $argdef[1])
+                return false;
         return true;
     }
 
     public function & makeArg($rel, & $arg)
     {
-        $action = & $this->argdef[$rel];
+        $action = & $this->arg_action[$rel];
         if ($action instanceof SyntaxAction)
         {
             $arg2 = & $action->make($arg, $this);
@@ -2126,6 +2139,32 @@ class Caseframe
         foreach (str_split($this->relorder) as $rel)
         {
             $strs[] = (string) $this->getArg($rel);
+        }
+        return implode(' ', array_filter($strs));
+    }
+
+}
+
+/** 
+ * @todo
+ * @pattern Composite
+ */
+class SyntaxTree
+{
+
+    public $args = array();
+
+    public function addArg(& $arg)
+    {
+        $this->args[] = & $arg;
+    }
+
+    public function __toString()
+    {
+        $strs = array();
+        foreach ($this->args as & $arg)
+        {
+            $strs[] = (string) $arg;
         }
         return implode(' ', array_filter($strs));
     }
@@ -2424,6 +2463,7 @@ class GFactory
         'töreksz' => true,
         'öregsz' => true,
         'veszeksz' => true,
+        'kardoskod' => true,
     );
 
     public static function & parseV($string)
@@ -2455,9 +2495,9 @@ class GFactory
         return $obj;
     }
 
-    public static function & createCaseframe()
+    public static function & createCaseframe($description)
     {
-        $F = new Caseframe();
+        $F = new Caseframe($description);
         return $F;
     }
 
