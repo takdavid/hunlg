@@ -160,16 +160,16 @@ class Phonology
 
     public static $vowelmaps = array(
         true => array(
-            '--' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'a', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'a'),
-            'U-' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'a', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'a'),
-            '-I' => array( 'A' => 'e', 'Á' => 'é', 'E' => 'e', 'O' => 'e', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'V' => 'e'),
-            'UI' => array( 'A' => 'e', 'Á' => 'é', 'E' => 'e', 'O' => 'ö', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'V' => 'e'),
+            '--' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'o', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'a', 'W' => 'a'),
+            'U-' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'o', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'a', 'W' => 'a'),
+            '-I' => array( 'A' => 'e', 'Á' => 'é', 'E' => 'e', 'O' => 'e', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'V' => 'e', 'W' => 'e'),
+            'UI' => array( 'A' => 'e', 'Á' => 'é', 'E' => 'e', 'O' => 'ö', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'V' => 'e', 'W' => 'e'),
         ),
         false => array(
-            '--' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'o', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'o'),
-            'U-' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'o', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'a'),
-            '-I' => array( 'A' => 'e', 'Á' => 'é', 'E' => 'e', 'O' => 'e', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'V' => 'e'),
-            'UI' => array( 'A' => 'e', 'Á' => 'é', 'E' => 'ö', 'O' => 'ö', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'V' => 'ö'),
+            '--' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'o', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'o', 'W' => 'o'),
+            'U-' => array( 'A' => 'a', 'Á' => 'á', 'E' => 'o', 'O' => 'o', 'Ó' => 'ó', 'U' => 'u', 'Ú' => 'ú', 'V' => 'a', 'W' => 'o'),
+            '-I' => array( 'A' => 'e', 'Á' => 'é', 'E' => 'e', 'O' => 'e', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'V' => 'e', 'W' => 'e'),
+            'UI' => array( 'A' => 'e', 'Á' => 'é', 'E' => 'ö', 'O' => 'ö', 'Ó' => 'ő', 'U' => 'ü', 'Ú' => 'ű', 'V' => 'ö', 'W' => 'ö'),
         ),
     );
 
@@ -197,10 +197,9 @@ class Phonology
         ////    print 'nomen '.$nomen->ortho.' is '.get_class($nomen).' ';
 
         $is_opening = $nomen->isOpening();
-        // @todo nemcsak a birtokoshoz, hanem a további toldalékokra is terjed az I ha needBirtokosSuffixI() volt korábban, ld. oxigéneteket!
         $nomen_phonocode = 
-            (Phonology::needSuffixU($nomen->lemma) ? 'U' : '-') . 
-            ((Phonology::needSuffixI($nomen->lemma) || ($suffix instanceof BirtokosSuffixum && $nomen->needBirtokosSuffixI())) ? 'I' : '-') ;
+            (Phonology::needSuffixU($nomen->ortho) ? 'U' : '-') . 
+            ($nomen->needSuffixI() ? 'I' : '-') ;
         //print "\n".'lemma='.$nomen->lemma.' opening='.(int) $is_opening.' phonocode='.$nomen_phonocode;
         $vowelmap = self::$vowelmaps[$is_opening][$nomen_phonocode];
 
@@ -244,7 +243,8 @@ class Phonology
     }
 
     public static $invalid_suffix_regex_list = array(
-        '/d,t/', '/k,t/', '/t,t/', '/k,k/', '/r,k/', '/t,k/', '/z,k/', 
+        '/d,t/', '/k,t/',                   '/t,t/', 
+        '/d,k/', '/k,k/', '/n,k/', '/r,k/', '/t,k/', '/z,k/', 
         '/s,t.+/', // @see barnulástok
         '/r,t.+/',
     );
@@ -373,10 +373,15 @@ class Wordform
     /** @todo use lexicon is_birtokos_i
     /** @todo move down from here
      */
-    public function needBirtokosSuffixI()
+    public function needSuffixI()
     {
+        if ($this->lemma === 'híd')
+            return false;
+        if ($this->lemma === 'nyíl')
+            return false;
         if ($this->lemma === 'oxigén')
             return true;
+        return Phonology::needSuffixI($this->lemma);
     }
 
 }
@@ -430,8 +435,6 @@ interface VirtualTemporalCases
     public function & makeTemporalis();
 }
 
-/** @todo latin neve?
- */
 interface PersNum
 {
     public function & makePersNum($numero = 1, $person = 3);
@@ -449,7 +452,7 @@ class BirtokosSuffixum extends Suffixum implements PersNum
 
     public static $suffixmap = array(
         1 => array(1 => 'Vm', 2 => 'Vd', 3 => 'A'),
-        3 => array(1 => 'Unk', 2 => '_EtEk', 3 => 'Uk'),
+        3 => array(1 => '_Unk', 2 => '_WtEk', 3 => 'Uk'),
     );
 
     public function & makePersNum($numero = 1, $person = 3)
@@ -505,7 +508,8 @@ class Nomen extends Wordform implements NominalCases, VirtualNominalCases
 
     public function & makePlural()
     {
-        $clone = $this->makeNominativus();
+        //$clone = $this->makeNominativus();
+        $clone = clone $this;
         if ($this->isPlural())
             return $clone;
         $clone->numero = 3;
@@ -547,11 +551,12 @@ class Nomen extends Wordform implements NominalCases, VirtualNominalCases
 
     public function & makeNominativus()
     {
-        $clone = new Nomen($this->lemma);
-        $clone->vow = $this->vow;
-        $clone->is_vtmr = $this->is_vtmr;
-        $clone->is_opening = $this->is_opening;
+        //$clone = new Nomen($this->lemma);
+        //$clone->vow = $this->vow;
+        //$clone->is_vtmr = $this->is_vtmr;
+        //$clone->is_opening = $this->is_opening;
         // @todo copy other fields?
+        $clone = clone $this;
         if ($this->isPlural())
             $clone = $clone->makePlural();
         return $clone;
@@ -891,7 +896,7 @@ class GFactory
 
     // @todo not full list
     // not opening e.g.: gáz bűz rés
-    public static $N_opening_list = array('út', 'nyár', 'ház', 'tűz', 'víz', 'föld', 'zöld', 'nyúl');
+    public static $N_opening_list = array('út', 'nyár', 'ház', 'tűz', 'víz', 'föld', 'zöld', 'nyúl', 'híd', 'nyíl');
 
     // @todo not full list
     public static $N_jaje_list = array('nagy', 'pad', 'sárkány', 'kupec', 'kortes', 'macesz', 'trapéz', );
