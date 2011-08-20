@@ -189,6 +189,8 @@ class Phonology
         //print $nomen->lemma.' => $nomen->isBTMR()='.(int) $nomen->isBTMR().' $suffix->isBTMR()='.(int) $suffix->isBTMR()."\n";
         if ($nomen->isBTMR() && $suffix->isBTMR())
             $stem = self::doMR($nomen->ortho);
+        if (!is_object($nomen)) { print 'nomen is '; var_dump($nomen); }
+        if (!is_object($suffix)) { print 'suffix is '; var_dump($suffix); }
         //print 'isAMNYLeft='.(int) $nomen->isAMNYLeft().' isAMNYRight='.(int) $suffix->isAMNYRight();
         if ($nomen->isAMNYLeft() && $suffix->isAMNYRight())
             $stem = self::doAMNY($nomen->ortho);
@@ -223,30 +225,48 @@ class Phonology
         if ($suffix instanceof PossessiveSuffixum && $suffix->person === 3 && $nomen instanceof Nomen && $nomen->isJaje())
             $_suffix = "j$_suffix";
 
+        //print "stem=$stem ";
         // kötőhang
         $chr0 = mb_substr($_suffix, 0, 1);
         if ($chr0 === '_')
         {
             $suffix_vowel = mb_substr($_suffix, 1, 1);
             $suffix_stem = mb_substr($_suffix, 2);
-            if ($nomen->isOpening())
+            $is_last_vowel = self::isVowel(mb_substr($stem, -1, 1));
+            if ($nomen->isOpening() && !$is_last_vowel)
+            {
+                //print 1;
                 $_suffix = $suffix_vowel.$suffix_stem;
-            elseif ($suffix instanceof PossessiveSuffixum && !self::isVowel(mb_substr($stem, -1, 1)))
+            }
+            elseif ($suffix instanceof PossessiveSuffixum && !$is_last_vowel)
+            {
+                //print 2;
                 $_suffix = $suffix_vowel.$suffix_stem;
-            elseif (self::isValidSuffix($stem, $suffix_stem))
-                $_suffix = $suffix_stem;
+            }
             else
-                $_suffix = $suffix_vowel.$suffix_stem;
+            {
+                if (self::isValidSuffix($stem, $suffix_stem))
+                {
+                    //print 3;
+                    $_suffix = $suffix_stem;
+                }
+                else
+                {
+                    //print 4;
+                    $_suffix = $suffix_vowel.$suffix_stem;
+                }
+            }
         }
-
+        //print "_suffix=$_suffix ";
         //print "\n";
 
         return $stem.$_suffix;
     }
 
     public static $invalid_suffix_regex_list = array(
-        '/[dkt],t/',
+        '/[dkpt],t/',
         '/[dghklmnrtvyz],k/',
+        '/r,n/',
         '/s,t.+/', // @see barnulástok
         '/r,t.+/',
     );
@@ -370,7 +390,6 @@ class Wordform
     {
         if (!is_null($this->is_amny))
             return $this->is_amny;
-        return true;
     }
 
     public function isVolatile()
@@ -450,6 +469,14 @@ interface PersNum
 
 class Suffixum extends Wordform
 {
+
+    public function isAMNYRight()
+    {
+        if (!is_null($this->is_amny))
+            return $this->is_amny;
+        return true;
+    }
+
 }
 
 class PossessiveSuffixum extends Suffixum implements PersNum
@@ -460,7 +487,7 @@ class PossessiveSuffixum extends Suffixum implements PersNum
 
     public static $suffixmap = array(
         1 => array(
-            1 => array(1 => 'Vm', 2 => 'Vd', 3 => 'A'),
+            1 => array(1 => '_Vm', 2 => 'Vd', 3 => 'A'),
             3 => array(1 => '_Unk', 2 => '_VtEk', 3 => 'Uk'),
         ),
         3 => array(
@@ -528,6 +555,11 @@ class Nomen extends Wordform implements NominalCases, VirtualNominalCases
     public function isVolatile()
     {
         return $this->is_volatile && ($this->lemma === $this->ortho);
+    }
+
+    public function isAMNYRight()
+    {
+        return false;
     }
 
     public function & appendSuffix($suffix)
@@ -655,7 +687,7 @@ class Nomen extends Wordform implements NominalCases, VirtualNominalCases
 
     public function & makeSuperessivus()
     {
-        return $this->_makeCaseFromNominativusWithSuffix('Superessivus', GFactory::parseSuffixum('On'));
+        return $this->_makeCaseFromNominativusWithSuffix('Superessivus', GFactory::parseSuffixum('_On'));
     }
 
     public function & makeDelativus()
@@ -930,7 +962,7 @@ class GFactory
 
     // @todo not full list
     // not opening e.g.: gáz bűz rés
-    public static $N_opening_list = array('út', 'nyár', 'ház', 'tűz', 'víz', 'föld', 'zöld', 'nyúl', 'híd', 'nyíl', 'bátor', 'ajak', 'kazal', 'ló', 'hó', 'fű', );
+    public static $N_opening_list = array('út', 'nyár', 'ház', 'tűz', 'víz', 'föld', 'zöld', 'nyúl', 'híd', 'nyíl', 'bátor', 'ajak', 'kazal', 'ló', 'hó', 'fű', 'hazai', );
 
     // @todo not full list
     public static $N_jaje_list = array('nagy', 'pad', 'sárkány', 'kupec', 'kortes', 'macesz', 'trapéz', );
@@ -1039,7 +1071,7 @@ class GFactory
         $obj->is_vtmr = in_array($string, self::$suffixum_vtmr_list, true);
         $obj->is_btmr = in_array($string, self::$suffixum_btmr_list, true);
         $obj->is_opening = in_array($string, self::$suffixum_opening_list, true);
-        $obj->is_amny = !in_array(string, self::$suffixum_not_AMNY_right_list);
+        $obj->is_amny = !in_array($string, self::$suffixum_not_AMNY_right_list);
         $obj->is_volatile = in_array($string, self::$suffixum_volatile_list);
         return $obj;
     }
