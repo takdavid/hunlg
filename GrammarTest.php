@@ -383,6 +383,7 @@ class EmberTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('embernél', (string) $N->makeAdessivus());
         $this->assertEquals('embertől', (string) $N->makeAblativus());
         $this->assertEquals('emberig', (string) $N->makeTerminativus());
+        $this->assertEquals('emberig', (string) $N->makeCase('Terminativus'));
 
         unset($N);
         $N = GFactory::parseNP('út');
@@ -1038,6 +1039,22 @@ class EmberTest extends PHPUnit_Framework_TestCase
             $actual = (string) $P->appendSuffix(new PostpositionSuffixum($conjugation[0], $conjugation[1]));
             $this->assertEquals($expected, $actual, 'Postposition ('.implode(',', $conjugation).") '$P' should be '$expected', not '$actual'.");
         }
+    }
+
+    public function testCaseframe()
+    {
+        $F = & GFactory::createCaseframe('mond', array('S' => 'Nominativus', 'O' => 'Accusativus', '1' => 'Sublativus'));
+        $F->setArg('S', GFactory::parseNP('valaki'));
+        $F->setArg('O', GFactory::parseNP('valami'));
+        $F->setArg('1', GFactory::parseNP('valaki'));
+        $this->assertEquals('mond', (string) $F->prepareComponent('V'));
+        $this->assertEquals('valaki', (string) $F->prepareComponent('S'));
+        $this->assertEquals('valamit', (string) $F->prepareComponent('O'));
+        $this->assertEquals('valakire', (string) $F->prepareComponent('1'));
+        $F->relorder = 'VSO12';
+        $this->assertEquals('mond valaki valamit valakire', (string) $F);
+        $F->relorder = 'SVO12';
+        $this->assertEquals('valaki mond valamit valakire', (string) $F);
     }
 
 }
