@@ -199,47 +199,6 @@ class Phonology
         return true;
     }
 
-    public static $vowelmap_hl = array(
-        'a' => 'l',
-        'á' => '0',
-        'e' => 'h',
-        'é' => 'h',
-        'i' => '0',
-        'í' => '0',
-        'o' => 'l',
-        'ó' => 'l',
-        'ö' => 'h',
-        'ő' => 'h',
-        'u' => 'l',
-        'ú' => 'l',
-        'ü' => 'h',
-        'ű' => 'h',
-    );
-
-    public static function getVowSeq($ortho)
-    {
-        $vowseq = '';
-        $len = mb_strlen($ortho);
-        for ($i = 0; $i < $len; $i++)
-        {
-            $chr = mb_substr($ortho, $i, 1);
-            if (isset(self::$vowelmap_hl[$chr]))
-                $vowseq .= self::$vowelmap_hl[$chr];
-        }
-        return $vowseq;
-    }
-
-    public static function getVow($ortho)
-    {
-        $vowseq = self::getVowSeq($ortho);
-        if (preg_match('/h+$/', $vowseq))
-            return 'high';
-        if (preg_match('/l+$/', $vowseq))
-            return 'low';
-        if (preg_match('/0+$/', $vowseq))
-            return 'opening';
-    }
-
 }
 
 interface iWordformPhonology
@@ -267,7 +226,6 @@ class Wordform implements iWordformPhonology, iWordformMorphology
 {
     public $lemma = '';
     public $ortho = '';
-    public $vow = '';
     public $is_vtmr = false; 
     public $is_btmr = false; 
     public $is_opening = false; 
@@ -279,7 +237,6 @@ class Wordform implements iWordformPhonology, iWordformMorphology
     {
         $this->lemma = $lemma;
         $this->ortho = $ortho ? $ortho : $lemma;
-        $this->vow = Phonology::getVow($this->ortho);
     }
 
     // Helpers {{{
@@ -304,8 +261,8 @@ class Wordform implements iWordformPhonology, iWordformMorphology
     public function & appendSuffix(Suffixum & $suffix)
     {
         $input_class = $suffix->getInputClass();
-        if (!($this instanceof $input_class)) print 'this is a '.get_class($this).' while suffix '.$suffix->ortho.' wants '.$suffix->getInputClass()."\n";
-        assert('$this instanceof $input_class');
+        if (!($this instanceof $input_class))
+            throw new Exception('This "'.$this->ortho.'" is a '.get_class($this).' while suffix "'.$suffix->ortho.'" wants '.$suffix->getInputClass());
         $stem = $this->cloneAs($suffix->getOutputClass());
         $stem->onBeforeSuffixation($suffix);
         $affix = clone $suffix;
@@ -522,6 +479,11 @@ class Suffixum extends Wordform implements iSuffixumMorphology
             return $this->lemma;
     }
 
+    public function isValidSuffixConcatenation($ortho_stem, $ortho_suffix)
+    {
+        return Phonology::isValidSuffixConcatenation($ortho_stem, $ortho_suffix);
+    }
+
     // kötőhang
     public function getInterfix(& $stem)
     {
@@ -544,7 +506,7 @@ class Suffixum extends Wordform implements iSuffixumMorphology
             }
             else
             {
-                if (Phonology::isValidSuffixConcatenation($stem->ortho, $this->ortho))
+                if ($this->isValidSuffixConcatenation($stem->ortho, $this->ortho))
                 {
                     $interfix = '';
                 }
@@ -557,17 +519,23 @@ class Suffixum extends Wordform implements iSuffixumMorphology
         return $interfix;
     }
 
-    public function onBeforeSuffixed(& $stem)
+    public function hasonul(& $stem, $ortho, $char)
     {
-        $ortho = $this->getNonOptionalSuffix();
-        if (mb_substr($ortho, 0, 1) === 'v') // v hasonul
+        if (mb_substr($ortho, 0, 1) === $char)
         {
             if ($stem->isLastVowel())
-                $first = 'v';
+                $first = $char;
             else
                 $first = Phonology::getLastConsonant($stem->ortho);
             $ortho = $first.mb_substr($ortho, 1);
         }
+        return $ortho;
+    }
+
+    public function onBeforeSuffixed(& $stem)
+    {
+        $ortho = $this->getNonOptionalSuffix();
+        $ortho = $this->hasonul($stem, $ortho, 'v');
         $ortho = Phonology::interpolateVowels($stem, $ortho);
         $this->ortho = $ortho;
     }
@@ -664,8 +632,167 @@ class PossessorSuffixum extends Suffixum
 
 }
 
+class VerbalSuffixum extends Suffixum
+{
+
+    public $input_class = 'Verbum';
+    public $output_class = 'Verbum';
+
+    public static $paradigm = array(
+        1 => array(
+            0 => array(
+                0 => array(
+                    1 => array(1 => 'Vk', 2 => 'Vl', 3 => ''),
+                    3 => array(1 => 'Unk', 2 => '_VtVk', 3 => '_AnAk'),
+                ),
+                1 => array(
+                    1 => array(1 => 'Vm', 2 => 'Vd', 3 => 'ja'),
+                    3 => array(1 => 'jUk', 2 => 'jÁtVk', 3 => 'jÁk'),
+                ),
+            ),
+            -1 => array(
+                0 => array(
+                    1 => array(1 => 'Am', 2 => 'Ál', 3 => ''),
+                    3 => array(1 => 'Unk', 2 => '_AtVk', 3 => 'Ak'),
+                ),
+                1 => array(
+                    1 => array(1 => 'Am', 2 => 'Ad', 3 => 'A'),
+                    3 => array(1 => 'Uk', 2 => '_ÁtVk', 3 => 'Ák'),
+                ),
+            ),
+        ),
+        2 => array(
+            0 => array(
+                0 => array(
+                    1 => array(1 => 'ék', 2 => 'Ál', 3 => 'A'),
+                    3 => array(1 => 'Ánk', 2 => 'ÁtVk', 3 => 'ÁnAk'),
+                ),
+                1 => array(
+                    1 => array(1 => 'Ám', 2 => 'Ád', 3 => 'Á'),
+                    3 => array(1 => 'Ánk', 2 => 'ÁtVk', 3 => 'Ák'),
+                ),
+            ),
+        ),
+        3 => array(
+            0 => array(
+                0 => array(
+                    1 => array(1 => 'Ak', 2 => 'Ál', 3 => 'On'),
+                    3 => array(1 => 'Unk', 2 => 'AtOk', 3 => 'AnAk'),
+                ),
+                1 => array(
+                    1 => array(1 => 'Am', 2 => 'Ad', 3 => 'A'),
+                    3 => array(1 => 'Uk', 2 => 'ÁtVk', 3 => 'Ák'),
+                ),
+            ),
+        ),
+    );
+
+    public static function & conjugate($numero, $person, $moode, $tense, $definite)
+    {
+        $suffix = new VerbalSuffixum(self::$paradigm[$moode][$tense][$definite][$numero][$person]);
+        $suffix->moode = $moode;
+        $suffix->tense = $tense;
+        $suffix->definite = $definite;
+        $suffix->numero = $numero;
+        $suffix->person = $person;
+        return $suffix;
+    }
+
+    public static $valid_suffix_regex_list = array(
+        '/s,[nt][^nt]/',
+    );
+
+    public function isValidSuffixConcatenation($ortho_stem, $ortho_suffix)
+    {
+        $string = "$ortho_stem,$ortho_suffix";
+        //print " isValidSuffixConcatenation($string) ";
+        foreach (self::$valid_suffix_regex_list as $regex)
+            if (preg_match($regex, $string))
+                return true;
+        return false;
+    }
+
+    public function getInterfix(& $stem)
+    {
+        $interfix = '';
+        if ($this->moode === 1 && $this->tense === -1)
+        {
+            if (!$stem->isLastVowel() && $this->numero === 1 && $this->person === 3 && !$this->definite)
+                return Phonology::interpolateVowels($stem, 'Vt').'t';
+            $interfix = 't';
+        }
+        if ($this->moode === 2 && $this->tense === 0)
+            $interfix = 'n';
+        if ($this->moode === 3)
+            $interfix = $this->hasonul($stem, 'j', 'j');
+        //print "stem=$stem suffix=$this ";
+        //print "hasOptionalInterfix=".(int) $this->hasOptionalInterfix();
+        //print "isValidSuffixConcatenation=".(int) $this->isValidSuffixConcatenation($stem->ortho, $this->ortho);
+        if ($this->hasOptionalInterfix() && !$this->isValidSuffixConcatenation($stem->ortho, $interfix.$this->ortho))
+        {
+            $interfix .= $this->getOptionalInterfix();
+            //print "interfix/2=$interfix ";
+            $interfix = Phonology::interpolateVowels($stem, $interfix);
+            //print "interfix/3=$interfix ";
+        }
+        //print "interfix/4=$interfix ";
+        return $interfix;
+    }
+
+    public function onBeforeSuffixed(& $stem)
+    {
+        $ortho = $this->getNonOptionalSuffix();
+        $ortho = $this->hasonul($stem, $ortho, 'j');
+        $ortho = Phonology::interpolateVowels($stem, $ortho);
+        $this->ortho = $ortho;
+    }
+
+    public function onAfterSuffixed(& $stem)
+    {
+    }
+
+}
+
 class Verbum extends Wordform
 {
+
+    // Szótári alak
+    public function & getCitationForm()
+    {
+        $clone = clone $this;
+        $clone->conjugate(1, 3, 1, 0, 0);
+        return $clone;
+    }
+
+    public function & conjugate($numero, $person, $moode, $tense, $definite)
+    {
+        $suffix = VerbalSuffixum::conjugate($numero, $person, $moode, $tense, $definite);
+        $clone = & $this->appendSuffix($suffix);
+        return $clone;
+    }
+
+    public function & makeInfinitive($numero=NULL, $person=NULL) { }
+
+    // tAt Műveltető
+    public function & makeCausative() { }
+
+    // gerund, -Ás
+    public function & makeVerbalNoun() { }
+
+    // -Ó
+    // Ott / t
+    // AndÓ
+    public function & makeParticiple($tense) { }
+
+    // -hAt
+    public function & makeModal() {  }
+
+    // Igekötő
+    public function & addParticle($particle) { }
+
+    public function & addAuxiliary($aux) { }
+
+    // auxiliaries : kell kellene kéne muszáj szabad tilos fog tud szokott
 }
 
 interface iPossessable

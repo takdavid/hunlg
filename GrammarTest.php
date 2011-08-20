@@ -180,21 +180,16 @@ class EmberTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('Vargáé', (string) GFactory::parseNP('Varga')->appendSuffix(PossessorSuffixum::makePossessor()));
     }
 
-    public function testVow()
-    {
-        $this->assertEquals('00hhhhllh', Phonology::getVowSeq('árvíztűrő tükörfúrógép'));
-        $this->assertEquals('high', Phonology::getVow('ember'));
-        $this->assertEquals('opening', Phonology::getVow('ház'));
-        $this->assertEquals('low', Phonology::getVow('út'));
-    }
-
-    public function testStemTypes()
+    public function testOpening()
     {
         $this->assertTrue(GFactory::parseNP('ház')->isOpening());
         $this->assertTrue(GFactory::parseV('zöldül')->isOpening());
         $this->assertTrue(GFactory::parseV('zöldül')->appendSuffix(GFactory::parseSuffixum('Ás'))->isOpening());
         $this->assertTrue(GFactory::parseV('zöldül')->appendSuffix(GFactory::parseSuffixum('Ás'))->appendSuffix(PossessiveSuffixum::makeNumPers(3, 2))->isOpening());
+    }
 
+    public function testAlternating()
+    {
         $this->assertTrue(GFactory::parseNP('bátor')->isAlternating());
         $this->assertTrue(GFactory::parseSuffixum('_Vk')->isAlternating(), 'plural suffixum is volatile');
         $this->assertEquals('ajkak',  (string) GFactory::parseNP('ajak')->makePlural());
@@ -472,6 +467,199 @@ class EmberTest extends PHPUnit_Framework_TestCase
         unset($N);
         $N = GFactory::parseNP('út');
         $this->assertEquals('úton keresztül', (string) $N->makePerlativus());
+    }
+
+        /* @see esetek.html
+        miattam
+        miattad
+        miatta
+        miattunk
+        miattatok
+        miattuk
+
+        nélkül
+        szerint
+        ellenére
+        végett
+        ellen
+        miatt
+        révén
+        fölé
+        felett
+        fölött
+        fölül
+        mellett
+        alá
+        alatt
+        alól
+        mellé
+        mellett
+        mellől
+        felől
+        elé
+        előtt
+        elől
+        felé
+        iránt
+        felől
+        mögé
+        mögött
+        megett
+        mögül
+        túlra
+        utánra
+        túl
+        után
+        túlról
+        köré
+        körül
+        körött
+
+        előtt
+        fogva HRNU
+        alatt
+        után
+
+        gyanánt
+        helyett
+
+        képest HRNU
+        nézve HRNU
+
+    public function testNU()
+    {
+        $this->markTestSkipped();
+
+    }
+         */
+
+    public function testConjugation()
+    {
+        unset($V);
+        $V = & GFactory::parseV('olvas');
+        $this->assertEquals('olvas', (string) $V->getCitationForm());
+
+        $this->assertEquals('olvasok',  (string) $V->conjugate(1, 1, 1, 0, 0));
+        $this->assertEquals('olvasol',  (string) $V->conjugate(1, 2, 1, 0, 0));
+        $this->assertEquals('olvas',    (string) $V->conjugate(1, 3, 1, 0, 0));
+        $this->assertEquals('olvasunk', (string) $V->conjugate(3, 1, 1, 0, 0));
+        $this->assertEquals('olvastok', (string) $V->conjugate(3, 2, 1, 0, 0));
+        $this->assertEquals('olvasnak', (string) $V->conjugate(3, 3, 1, 0, 0));
+
+        $this->assertEquals('olvasom',    (string) $V->conjugate(1, 1, 1, 0, 1));
+        $this->assertEquals('olvasod',    (string) $V->conjugate(1, 2, 1, 0, 1));
+        $this->assertEquals('olvassa',    (string) $V->conjugate(1, 3, 1, 0, 1));
+        $this->assertEquals('olvassuk',   (string) $V->conjugate(3, 1, 1, 0, 1));
+        $this->assertEquals('olvassátok', (string) $V->conjugate(3, 2, 1, 0, 1));
+        $this->assertEquals('olvassák',   (string) $V->conjugate(3, 3, 1, 0, 1));
+
+        $this->assertEquals('olvastam',   (string) $V->conjugate(1, 1, 1, -1, 0));
+        $this->assertEquals('olvastál',   (string) $V->conjugate(1, 2, 1, -1, 0));
+        $this->assertEquals('olvasott',   (string) $V->conjugate(1, 3, 1, -1, 0));
+        $this->assertEquals('olvastunk',  (string) $V->conjugate(3, 1, 1, -1, 0));
+        $this->assertEquals('olvastatok', (string) $V->conjugate(3, 2, 1, -1, 0));
+        $this->assertEquals('olvastak',   (string) $V->conjugate(3, 3, 1, -1, 0));
+
+        $this->assertEquals('olvastam',   (string) $V->conjugate(1, 1, 1, -1, 1));
+        $this->assertEquals('olvastad',   (string) $V->conjugate(1, 2, 1, -1, 1));
+        $this->assertEquals('olvasta',    (string) $V->conjugate(1, 3, 1, -1, 1));
+        $this->assertEquals('olvastuk',   (string) $V->conjugate(3, 1, 1, -1, 1));
+        $this->assertEquals('olvastátok', (string) $V->conjugate(3, 2, 1, -1, 1));
+        $this->assertEquals('olvasták',   (string) $V->conjugate(3, 3, 1, -1, 1));
+
+        $this->assertEquals('olvasnék',   (string) $V->conjugate(1, 1, 2, 0, 0));
+        $this->assertEquals('olvasnál',   (string) $V->conjugate(1, 2, 2, 0, 0));
+        $this->assertEquals('olvasna',    (string) $V->conjugate(1, 3, 2, 0, 0));
+        $this->assertEquals('olvasnánk',  (string) $V->conjugate(3, 1, 2, 0, 0));
+        $this->assertEquals('olvasnátok', (string) $V->conjugate(3, 2, 2, 0, 0));
+        $this->assertEquals('olvasnának', (string) $V->conjugate(3, 3, 2, 0, 0));
+
+        $this->assertEquals('olvasnám',   (string) $V->conjugate(1, 1, 2, 0, 1));
+        $this->assertEquals('olvasnád',   (string) $V->conjugate(1, 2, 2, 0, 1));
+        $this->assertEquals('olvasná',    (string) $V->conjugate(1, 3, 2, 0, 1));
+        $this->assertEquals('olvasnánk',  (string) $V->conjugate(3, 1, 2, 0, 1));
+        $this->assertEquals('olvasnátok', (string) $V->conjugate(3, 2, 2, 0, 1));
+        $this->assertEquals('olvasnák',   (string) $V->conjugate(3, 3, 2, 0, 1));
+
+        $this->assertEquals('olvassak',   (string) $V->conjugate(1, 1, 3, 0, 0));
+        $this->assertEquals('olvassál',   (string) $V->conjugate(1, 2, 3, 0, 0));
+        //$this->assertEquals('olvass',     (string) $V->conjugate(1, 2, 3, 0, 0));
+        $this->assertEquals('olvasson',   (string) $V->conjugate(1, 3, 3, 0, 0));
+        $this->assertEquals('olvassunk',  (string) $V->conjugate(3, 1, 3, 0, 0));
+        $this->assertEquals('olvassatok', (string) $V->conjugate(3, 2, 3, 0, 0));
+        $this->assertEquals('olvassanak', (string) $V->conjugate(3, 3, 3, 0, 0));
+
+        $this->assertEquals('olvassam',   (string) $V->conjugate(1, 1, 3, 0, 1));
+        $this->assertEquals('olvassad',   (string) $V->conjugate(1, 2, 3, 0, 1));
+        //$this->assertEquals('olvasd',     (string) $V->conjugate(1, 2, 3, 0, 1));
+        $this->assertEquals('olvassa',    (string) $V->conjugate(1, 3, 3, 0, 1));
+        $this->assertEquals('olvassuk',   (string) $V->conjugate(3, 1, 3, 0, 1));
+        $this->assertEquals('olvassátok', (string) $V->conjugate(3, 2, 3, 0, 1));
+        $this->assertEquals('olvassák',   (string) $V->conjugate(3, 3, 3, 0, 1));
+
+        /*
+        $this->assertEquals('olvastál volna', (string) $V->conjugate(1, 1, 1, 0, 0));
+        $this->assertEquals('olvastad volna', (string) $V->conjugate(1, 1, 1, 0, 0));
+
+        @todo tesz űz vár ül ért bont költ
+        eszik
+
+        lövök
+        lősz
+        lő
+        lövünk
+        lőtök
+        lőnek
+
+        lövöm
+        lövöd
+        lövi
+        lőjük
+        lövitek
+        lövik
+
+        //sz/v, full list
+        lesz
+        tesz tesz tev te
+        vesz
+        hisz
+        visz
+        eszik
+        iszik
+
+        // @todo more on p. 219.
+
+        fogok
+        fogsz
+        fog
+        fogunk
+        fogtok
+        fognak
+
+        fogom
+        fogod
+        fogja
+        fogjuk
+        fogjátok
+        fogják
+
+        // VerbAux extends HeadedExpression
+
+        olvasni fogok
+        olvasni fogsz
+        olvasni fog
+        olvasni fogunk
+        olvasni fogtok
+        olvasni fognak
+
+        olvasni fogom
+        olvasni fogod
+        olvasni fogja
+        olvasni fogjuk
+        olvasni fogjátok
+        olvasni fogják
+
+         */
     }
 
 }
