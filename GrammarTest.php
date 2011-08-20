@@ -1041,20 +1041,58 @@ class EmberTest extends PHPUnit_Framework_TestCase
         }
     }
 
+    public function testSyntaxActionForCaseframe()
+    {
+        $action = & GFactory::getSyntaxAction('makeCase', 'Accusativus');
+        $this->assertEquals('SyntaxActionMakeCase', get_class($action));
+        $this->assertEquals('Accusativus', $action->case);
+        $this->assertEquals('valakit', (string) $action->make(GFactory::parseNP('valaki')));
+    }
+
     public function testCaseframe()
     {
-        $F = & GFactory::createCaseframe('mond', array('S' => 'Nominativus', 'O' => 'Accusativus', '1' => 'Sublativus'));
-        $F->setArg('S', GFactory::parseNP('valaki'));
-        $F->setArg('O', GFactory::parseNP('valami'));
-        $F->setArg('1', GFactory::parseNP('valaki'));
-        $this->assertEquals('mond', (string) $F->prepareComponent('V'));
-        $this->assertEquals('valaki', (string) $F->prepareComponent('S'));
-        $this->assertEquals('valamit', (string) $F->prepareComponent('O'));
-        $this->assertEquals('valakire', (string) $F->prepareComponent('1'));
+
+        unset($F);
+        $F = & GFactory::createCaseframe(); //, array('S' => 'Nominativus', 'O' => 'Accusativus', '1' => 'Sublativus'));
+        //$F->setArg('S', GFactory::parseNP('valaki'));
+        //$F->setArg('O', GFactory::parseNP('valami'));
+        //$F->setArg('1', GFactory::parseNP('valaki'));
+        $F->defArg('S', GFactory::getSyntaxAction('makeCase', 'Nominativus'));
+        $F->defArg('O', GFactory::getSyntaxAction('makeCase', 'Accusativus'));
+        $F->defArg('1', GFactory::getSyntaxAction('makeCase', 'Sublativus'));
+        $this->assertEquals('valaki', (string) $F->makeArg('S', GFactory::parseNP('valaki')));
+        $this->assertEquals('mond', (string) $F->makeArg('V', GFactory::parseV('mond')));
+        $this->assertEquals('valamit', (string) $F->makeArg('O', GFactory::parseNP('valami')));
+        $this->assertEquals('valakire', (string) $F->makeArg('1', GFactory::parseNP('valaki')));
         $F->relorder = 'VSO12';
         $this->assertEquals('mond valaki valamit valakire', (string) $F);
         $F->relorder = 'SVO12';
         $this->assertEquals('valaki mond valamit valakire', (string) $F);
+
+        unset($F);
+        $F = & GFactory::createCaseframe();
+        $F->defArg('S', GFactory::getSyntaxAction('makeCase', 'Nominativus'));
+        $F->defArg('1', GFactory::getSyntaxAction('makeNU', 'ellen')); // @deprecated
+        $F->makeArg('S', GFactory::parseNP('valaki'));
+        $F->makeArg('V', GFactory::parseV('ágál'));
+        $F->makeArg('1', GFactory::parseNP('valami'));
+        $F->relorder = 'VSO12';
+        $this->assertEquals('ágál valaki valami ellen', (string) $F);
+        $F->relorder = '1VS';
+        $this->assertEquals('valami ellen ágál valaki', (string) $F);
+
+        unset($F);
+        $F = & GFactory::createCaseframe();
+        $F->defArg('S', GFactory::getSyntaxAction('makeCase', 'Nominativus'));
+        $F->defArg('1', new SyntaxActionMakeArg(new ADVP_NU(GFactory::parseNP('mellett'), $NULL)));
+        $F->makeArg('S', GFactory::parseNP('valaki'));
+        $F->makeArg('V', GFactory::parseV('kardoskodik'));
+        $F->makeArg('1', GFactory::parseNP('valami'));
+        $F->relorder = 'VSO12';
+        $this->assertEquals('kardoskodik valaki valami mellett', (string) $F);
+        $F->relorder = '1VS';
+        $this->assertEquals('valami mellett kardoskodik valaki', (string) $F);
+
     }
 
 }

@@ -585,23 +585,22 @@ class Suffixum extends Wordform implements iSuffixumMorphology, iSuffixumPhonolo
             return $this->lemma;
     }
 
-    public static $invalid_suffix_regex_list = array(
-        '/[bcdfghkmptvw],t/',
-        '/[bcdfghklmnpqrstvwyz],[dkmn]/',
-        '/[bcdfghklmnpqrstvwyz]{2,},[bcdfghklmnpqrstvwyz]/',
-        '/[lrsy],t.+/', // @see barnulástok, hoteltek
-    );
+    public function getInvalidSuffixRegexList()
+    {
+        return array(
+            '/[bcdfghkmptvw],t/',
+            '/[bcdfghklmnpqrstvwyz],[dkmn]/',
+            '/[bcdfghklmnpqrstvwyz]{2,},[bcdfghklmnpqrstvwyz]/',
+            '/[lrsy],t.+/', // @see barnulástok, hoteltek
+        );
+    }
 
     public function isValidSuffixConcatenation($ortho_stem, $ortho_suffix)
     {
         $string = "$ortho_stem,$ortho_suffix";
-        foreach (self::$invalid_suffix_regex_list as $regex)
-        {
+        foreach ($this->getInvalidSuffixRegexList() as $regex)
             if (preg_match($regex, $string))
-            {
                 return false;
-            }
-        }
         return true;
     }
 
@@ -826,7 +825,7 @@ class VerbalHelper
 
 }
 
-abstract class aVerbalSuffixum extends Suffixum implements iVerbal
+abstract class aVerbalSuffixum extends Suffixum implements iVerbal, iNumPers
 {
 
     public $_input_class = 'Verbum';
@@ -856,6 +855,26 @@ abstract class aVerbalSuffixum extends Suffixum implements iVerbal
         $this->person = $person;
     }
 
+    // iNumPers {{{
+
+    public function & makeNumPers($numero = 1, $person = 3)
+    {
+        $class = get_class($this);
+        return new $class($numero, $person, 1, 0, 0);
+    }
+
+    public function getNumero()
+    {
+        return $this->numero;
+    }
+
+    public function getPerson()
+    {
+        return $this->person;
+    }
+
+    // }}}
+
     public function onAfterSuffixed(& $stem)
     {
         $stem->mood = $this->mood;
@@ -864,6 +883,8 @@ abstract class aVerbalSuffixum extends Suffixum implements iVerbal
         $stem->numero = $this->numero;
         $stem->person = $this->person;
     }
+
+    // iVerbal {{{
 
     public function getCase()
     {
@@ -879,6 +900,8 @@ abstract class aVerbalSuffixum extends Suffixum implements iVerbal
     {
         return VerbalHelper::matchCase($this, $regex);
     }
+
+    // }}}
 
 }
 
@@ -950,17 +973,11 @@ class VerbalSuffixum1 extends aVerbalSuffixum
             return Phonology::interpolateVowels($stem->needSuffixPhonocode(), 'A');
     }
 
-    public static $invalid_suffix_regex_list = array(
-        '/lt,n/',
-    );
-
-    public function isValidSuffixConcatenation($ortho_stem, $ortho_suffix)
+    public function getInvalidSuffixRegexList()
     {
-        $string = "$ortho_stem,$ortho_suffix";
-        foreach (self::$invalid_suffix_regex_list as $regex)
-            if (preg_match($regex, $string))
-                return false;
-        return true;
+        return array(
+            '/lt,n/',
+        );
     }
 
     public function onAfterSuffixed(& $stem)
@@ -1051,20 +1068,14 @@ class VerbalSuffixum2 extends aVerbalSuffixum
         $this->lemma = $this->ortho = self::$paradigm[$mood][$tense][$definite][$numero][$person];
     }
 
-    public static $invalid_suffix_regex_list = array(
-        '/[dlstz]t,[nt]/',
-        '/t,tt/',
-        '/lt,sz/',
-        '/lsz,[nt]/',
-    );
-
-    public function isValidSuffixConcatenation($ortho_stem, $ortho_suffix)
+    public function getInvalidSuffixRegexList()
     {
-        $string = "$ortho_stem,$ortho_suffix";
-        foreach (self::$invalid_suffix_regex_list as $regex)
-            if (preg_match($regex, $string))
-                return false;
-        return true;
+        return array(
+            '/[dlstz]t,[nt]/',
+            '/t,tt/',
+            '/lt,sz/',
+            '/lsz,[nt]/',
+        );
     }
 
     public function getInterfix(& $stem)
@@ -1138,7 +1149,7 @@ class InfinitiveSuffixum extends aVerbalSuffixum
     public function onBeforeSuffixed(& $stem)
     {
         $lemma = $this->lemma;
-        if ($stem->isSZV)
+        if ($stem->needInfinitivusNN())
             $lemma = 'n'.$lemma;
         if (!$this->isValidSuffixConcatenation($stem->ortho, $lemma))
         {
@@ -1148,22 +1159,16 @@ class InfinitiveSuffixum extends aVerbalSuffixum
         $this->ortho = Phonology::interpolateVowels($stem->needSuffixPhonocode(), $lemma);
     }
 
-    public static $invalid_suffix_regex_list = array(
-        '/lt,n/',
-    );
-
-    public function isValidSuffixConcatenation($ortho_stem, $ortho_suffix)
+    public function getInvalidSuffixRegexList()
     {
-        $string = "$ortho_stem,$ortho_suffix";
-        foreach (self::$invalid_suffix_regex_list as $regex)
-            if (preg_match($regex, $string))
-                return false;
-        return true;
+        return array(
+            '/lt,n/',
+        );
     }
 
 }
 
-class Verbum extends Wordform implements iVerbal
+class Verbum extends Wordform implements iVerbal, iNumPers
 {
     public $mood = NULL;
     public $tense = NULL;
@@ -1199,6 +1204,27 @@ class Verbum extends Wordform implements iVerbal
             return $clone2;
         }
     }
+
+    // iNumPers {{{
+
+    public function & makeNumPers($numero = 1, $person = 3)
+    {
+        return $this->conjugate($numero, $person, 1, 0, 0);
+    }
+
+    public function getNumero()
+    {
+        return $this->numero;
+    }
+
+    public function getPerson()
+    {
+        return $this->person;
+    }
+
+    // }}}
+
+    // iWordformPhonology {{{
 
     public function onBeforeSuffixation(& $suffix)
     {
@@ -1270,6 +1296,26 @@ class Verbum extends Wordform implements iVerbal
 
     }
 
+    // }}}
+
+    // i?Phonology {{{
+
+    public function isLastAffrSyb()
+    {
+        $char = Phonology::getLastConsonant($this->ortho);
+        return Phonology::isAffrikate($char) || Phonology::isSybyl($char);
+    }
+
+    public function isLastT()
+    {
+        $char = Phonology::getLastConsonant($this->ortho);
+        return ($char === 't' || $char === 'tt');
+    }
+
+    // }}}
+
+    // iVerbalSuffixum1 {{{
+
     public function needNN()
     {
         return $this->isSZV;
@@ -1285,19 +1331,7 @@ class Verbum extends Wordform implements iVerbal
     {
         $last = Phonology::getLastConsonant($this->ortho);
         $last1 = Phonology::getLastConsonant(mb_substr($this->ortho, 0, -mb_strlen($last)));
-        return Phonology::isVowel($last1) && ($last === 't' || $last === 'tt');
-    }
-
-    public function isLastAffrSyb()
-    {
-        $char = Phonology::getLastConsonant($this->ortho);
-        return Phonology::isAffrikate($char) || Phonology::isSybyl($char);
-    }
-
-    public function isLastT()
-    {
-        $char = Phonology::getLastConsonant($this->ortho);
-        return ($char === 't' || $char === 'tt');
+        return Phonology::isVowel($last1) && $this->isLastT();
     }
 
     public function needJs()
@@ -1335,12 +1369,14 @@ class Verbum extends Wordform implements iVerbal
     /**
      * @todo gAt, _tAt, hAt => +Vtt
      * CC (C!=t) => ingadozók
+     * @todo lexikalizálni kell: is_vtt
      */
     public function needVtt(& $suffix)
     {
-        $cons = Phonology::getLastConsonant($this->lemma);
-        if ($cons === 't')
+        if ($this->isLastT()) // mindig
             return true;
+
+        $cons = Phonology::getLastConsonant($this->lemma);
         $arr = array('m', 'v', 'r', 's', 'ss', 't', 'tt', 'z', 'zz', 'zs', 'zzs');
         if (in_array($cons, $arr))
         {
@@ -1349,6 +1385,7 @@ class Verbum extends Wordform implements iVerbal
             else
                 return false;
         }
+
         if ($this->lemma === 'isz')
         {
             if ($suffix->matchCase('13190'))
@@ -1356,6 +1393,7 @@ class Verbum extends Wordform implements iVerbal
                 return true;
             }
         }
+
         if ($this->lemma === 'esz')
         {
             if ($suffix->matchCase('13190'))
@@ -1363,8 +1401,13 @@ class Verbum extends Wordform implements iVerbal
                 return true;
             }
         }
-        return false;
+
+        return false; // általában nem
     }
+
+    // }}}
+
+    // iVerbal {{{
 
     public function getCase()
     {
@@ -1381,11 +1424,25 @@ class Verbum extends Wordform implements iVerbal
         return VerbalHelper::matchCase($this, $regex);
     }
 
+    // }}}
+
     public function & makeInfinitive($numero=0, $person=0)
     {
         $suffix = new InfinitiveSuffixum($numero, $person);
         return $this->appendSuffix($suffix);
     }
+
+    // iVerbInfinitive {{{
+
+    /**
+     * Érdekes, hogy a feltételes mód n-je és az infinitivus n-je is ugyanúgy duplázódik az SZV igéknél.
+     */
+    public function needInfinitivusNN()
+    {
+        return $this->isSZV;
+    }
+
+    // }}}
 
     // tAt Műveltető
     public function & makeCausative() { }
@@ -1404,9 +1461,9 @@ class Verbum extends Wordform implements iVerbal
     // Igekötő
     public function & addParticle($particle) { }
 
+    // auxiliaries : kell kellene kéne muszáj szabad tilos fog tud szokott
     public function & addAuxiliary($aux) { }
 
-    // auxiliaries : kell kellene kéne muszáj szabad tilos fog tud szokott
 }
 
 /** Valid nominal cases in hungarian.
@@ -1480,6 +1537,8 @@ class Nomen extends Wordform implements iPossessable, iNominalCases, iVirtualNom
         $this->lemma2 = $lemma;
     }
 
+    // iNumPers {{{
+
     public function & makeNumPers($numero = 1, $person = 3)
     {
         $this->numero = $numero;
@@ -1495,6 +1554,8 @@ class Nomen extends Wordform implements iPossessable, iNominalCases, iVirtualNom
     {
         return $this->person;
     }
+
+    // }}}
 
     /** Hint.
      */
@@ -1583,7 +1644,7 @@ class Nomen extends Wordform implements iPossessable, iNominalCases, iVirtualNom
         if (method_exists($this, $method))
             return $this->$method();
         else
-            throw Exception("No such case: $case");
+            throw new Exception("No such case: $case");
     }
 
     public function & makeNominativus()
@@ -1816,7 +1877,12 @@ class Adj extends Nomen
 
 }
 
-abstract class HeadedExpression
+interface iArgumented
+{
+    public function addArg(& $arg);
+}
+
+abstract class HeadedExpression implements iArgumented
 {
     public $case = NULL;
     public $head = NULL;
@@ -1825,6 +1891,11 @@ abstract class HeadedExpression
     public function __construct(& $head, & $arg)
     {
         $this->head = & $head;
+        $this->addArg($arg);
+    }
+
+    public function addArg(& $arg)
+    {
         $this->arg = & $arg;
     }
 
@@ -1894,7 +1965,105 @@ class ADVP_HNHSZ extends HeadedExpression
 
 }
 
+
 /**
+ * @pattern Action
+ * @principle dependency injection : a konstruktornak adjunk mindent, ami kell
+ */
+abstract class SyntaxAction
+{
+
+    /**
+     * @pattern Template function, kötelező implementálni
+     */
+    public abstract function & make(& $arg);
+}
+
+class SyntaxActionMakeCase extends SyntaxAction
+{
+
+    public function __construct($case)
+    {
+        $this->case = $case;
+    }
+
+    public function & make(& $arg)
+    {
+        assert('$arg instanceof iNominalCases');
+        return $arg->makeCase($this->case);
+    }
+
+}
+
+class SyntaxActionVerbDefault extends SyntaxAction
+{
+
+    public $context = NULL;
+
+    public function __construct(Caseframe & $context)
+    {
+        $this->context = & $context;
+    }
+
+    public function & make(& $arg)
+    {
+        assert('$arg instanceof Verbum');
+        $S = & $this->context->getArg('S');
+        if ($S)
+        {
+            assert('$S instanceof iNumPers');
+            return $arg->conjugate($S->getNumero(), $S->getPerson(), 1, 0, 0); // @todo just call makeNumPers(), leave other params
+        }
+        else
+            throw new Exception('No S for V');
+        // or (1, 3)
+    }
+
+}
+
+/** @deprecated
+ * A SyntaxActionMakeArg speciális esete.
+ */
+class SyntaxActionMakeNU extends SyntaxAction
+{
+
+    public $lemma;
+
+    public function __construct($lemma)
+    {
+        $this->lemma = $lemma;
+    }
+
+    public function & make(& $arg)
+    {
+        assert('$arg instanceof iNominalCases');
+        $ADVP = new ADVP_NU(GFactory::parseNP($this->lemma), $arg);
+        return $ADVP;
+    }
+
+}
+
+class SyntaxActionMakeArg extends SyntaxAction
+{
+
+    public $host = NULL;
+
+    public function __construct(& $host)
+    {
+        assert('$host instanceof iArgumented');
+        $this->host = & $host;
+    }
+
+    public function & make(& $arg)
+    {
+        $this->host->addArg($arg);
+        return $this->host;
+    }
+
+}
+
+/**
+ * @todo extends HeadedExpression ?
  * @todo fának kell lennie, ld. [ágál vki [vmi ellen]]
  */
 class Caseframe
@@ -1904,46 +2073,48 @@ class Caseframe
     public $args = array();
     public $relorder = 'VSO12'; // standard rel order
 
-    public function __construct(& $verb, $argdef)
+    public function __construct()
     {
-        $this->args['V'] = & $verb;
-        $this->argdef = $argdef;
+        $this->defArg('V', new SyntaxActionVerbDefault($this));
+    }
+
+    public function defArg($rel, & $action)
+    {
+        $this->argdef[$rel] = & $action;
     }
 
     public function setArg($rel, & $arg)
     {
-        $this->args[$rel] = & $arg;
+        if ($this->checkArg($rel, $arg))
+            $this->args[$rel] = & $arg;
+        else
+            throw new Exception("Invalid or no argdef for '$rel' arg '$arg'");
     }
 
-    /** @todo Ki mikor készíti elő az argumentumokat? Ki mikor hogyan ellenőriz?
-     * 1. hívásmód: csak nominativus argumentumokat adunk meg, a teljes előkészítést elvárjuk,
-     * pl. makeCaseframe1('ágál', 'valaki', 'valami') => "ágál valaki valami ellen"
-     * 2. hívásmód: minden argumentumot előkészítettünk már, max ellenőrzést várunk,
-     * pl. makeCaseframe1(parseV('ágál')->conjugate(3, 1, 2, -1, 0), makePronom(3, 1), new ADVP_NU('ellen', parseNP('valami')->makePlural())) => "ágáltunk volna valamik ellen"
-     *
-     * @todo Ha a komplementumok nem esetben vannak, hanem pl. névutósítottak (ld. ágál vmi ellen):
-     * Esetleg valami action-objektumba zárhatnánk? 
-     */
-    public function prepareComponent($rel)
+    public function & getArg($rel)
     {
-        if ($rel === 'V')
-        {
-            $S = & $this->prepareComponent('S');
-            if ($S)
-                $V = & $this->args['V']->conjugate($S->getNumero(), $S->getPerson(), 1, 0, 0);
-            else
-                $V = & $this->args['V']->conjugate(1, 3, 1, 0, 0);
-            return $V;
-        }
-        elseif (isset($this->args[$rel]))
-        {
-            if ($this->args[$rel] instanceof Nomen)
-            {
-                $case = $this->argdef[$rel];
-                return $this->args[$rel]->makeCase($case);
-            }
-        }
         return $this->args[$rel];
+    }
+
+    // @todo
+    // esetleg legyen külön deklarálható a típus (eset?) 
+    // vagy a SyntaxAction ellenőrizzen is?
+    public function checkArg($rel, & $arg)
+    {
+        return true;
+    }
+
+    public function & makeArg($rel, & $arg)
+    {
+        $action = & $this->argdef[$rel];
+        if ($action instanceof SyntaxAction)
+        {
+            $arg2 = & $action->make($arg, $this);
+            $this->setArg($rel, $arg2);
+        }
+        else
+            $this->setArg($rel, $arg);
+        return $arg2;
     }
 
     /**
@@ -1954,7 +2125,7 @@ class Caseframe
         $strs = array();
         foreach (str_split($this->relorder) as $rel)
         {
-            $strs[] = (string) $this->prepareComponent($rel);
+            $strs[] = (string) $this->getArg($rel);
         }
         return implode(' ', array_filter($strs));
     }
@@ -2284,10 +2455,17 @@ class GFactory
         return $obj;
     }
 
-    public static function & createCaseframe($string, $args)
+    public static function & createCaseframe()
     {
-        $F = new Caseframe(GFactory::parseV($string), $args);
+        $F = new Caseframe();
         return $F;
+    }
+
+    public static function getSyntaxAction($type, $param)
+    {
+        $class = "SyntaxAction".ucfirst($type);
+        $action = new $class($param);
+        return $action;
     }
 
 }
