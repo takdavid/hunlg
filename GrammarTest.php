@@ -5,6 +5,202 @@ require_once('grammar.php');
 class EmberTest extends PHPUnit_Framework_TestCase
 {
 
+    public function testVowelHarmony()
+    {
+        $this->assertEquals(true , Phonology::getPropagatedI('ember'), 'ember');
+        $this->assertEquals(false, Phonology::getPropagatedI('ház'), 'ház');
+        $this->assertEquals(true , Phonology::getPropagatedI('föld'), 'föld');
+        $this->assertEquals(true , Phonology::getPropagatedI('kert'), 'kert');
+        $this->assertEquals(true , Phonology::getPropagatedI('kéz'), 'kéz');
+        $this->assertEquals(false, Phonology::getPropagatedI('út'), 'út');
+        $this->assertEquals(true , Phonology::getPropagatedI('kövér'), 'kövér');
+        $this->assertEquals(true , Phonology::getPropagatedI('sofőr'), 'sofőr');
+        $this->assertEquals(false, Phonology::getPropagatedI('kőfal'), 'kőfal');
+        $this->assertEquals(false, Phonology::getPropagatedI('bika'), 'bika');
+        $this->assertEquals(false, Phonology::getPropagatedI('nüansz'), 'nüansz');
+
+        $this->assertEquals(false, Phonology::getPropagatedU('ház'), 'ház');
+        $this->assertEquals(false, Phonology::getPropagatedU('kert'), 'kert');
+        $this->assertEquals(true , Phonology::getPropagatedU('föld'), 'föld');
+        $this->assertEquals(false, Phonology::getPropagatedU('kéz'), 'kéz');
+
+        $this->assertEquals(false, Phonology::needSuffixI('ház'), 'ház');
+        $this->assertEquals(true , Phonology::needSuffixI('kert'), 'kert');
+        $this->assertEquals(true , Phonology::needSuffixI('föld'), 'föld');
+        $this->assertEquals(true , Phonology::needSuffixI('tök'), 'tök');
+        $this->assertEquals(true , Phonology::needSuffixI('kéz'), 'kéz');
+
+        $this->assertEquals(false, Phonology::needSuffixU('ház'), 'ház');
+        $this->assertEquals(false, Phonology::needSuffixU('kert'), 'kert');
+        $this->assertEquals(true , Phonology::needSuffixU('föld'), 'föld');
+        $this->assertEquals(true , Phonology::needSuffixU('tök'), 'tök');
+        $this->assertEquals(false, Phonology::needSuffixU('kéz'), 'kéz');
+
+    }
+
+    public function testAMNY()
+    {
+        $this->assertEquals('fát', (string) GFactory::parseNP('fa')->makeAccusativus());
+        $this->assertEquals('almás', (string) GFactory::parseNP('alma')->appendSuffix(GFactory::parseSuffixum('_Vs')));
+        //$this->assertEquals('tartják', (string) GFactory::parseV('tart')->
+        $this->assertEquals('házában', (string) GFactory::parseNP('ház')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3))->makeInessivus());
+        $this->assertEquals('létrám', (string) GFactory::parseNP('létra')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1)));
+        $this->assertEquals('marhái', (string) GFactory::parseNP('marha')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3, 3)));
+        // @todo $this->assertEquals('kutyául', (string) GFactory::parseNP('kutya')->makeEssivusFormalis());
+        $this->assertEquals('deltáig', (string) GFactory::parseNP('delta')->makeTerminativus());
+        $this->assertEquals('Vargát', (string) GFactory::parseNP('Varga')->makeAccusativus());
+        $this->assertEquals('portán', (string) GFactory::parseNP('porta')->makeSuperessivus());
+        $this->assertEquals('lustát', (string) GFactory::parseNP('lusta')->makeAccusativus());
+        $this->assertEquals('medvét', (string) GFactory::parseNP('medve')->makeAccusativus());
+        $this->assertEquals('epét', (string) GFactory::parseNP('epe')->makeAccusativus());
+        $this->assertEquals('képe', (string) GFactory::parseNP('kép')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
+        $this->assertEquals('képet', (string) GFactory::parseNP('kép')->makeAccusativus());
+        $this->assertEquals('képét', (string) GFactory::parseNP('kép')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3))->makeAccusativus());
+        $this->assertEquals('vesét', (string) GFactory::parseNP('vese')->makeAccusativus());
+        $this->assertEquals('sörtét', (string) GFactory::parseNP('sörte')->makeAccusativus());
+        $this->assertEquals('mércét', (string) GFactory::parseNP('mérce')->makeAccusativus());
+        $this->assertEquals('csempét', (string) GFactory::parseNP('csempe')->makeAccusativus());
+        $this->assertEquals('estét', (string) GFactory::parseNP('este')->makeAccusativus());
+        $this->assertEquals('feketét', (string) GFactory::parseNP('fekete')->makeAccusativus());
+
+        $this->assertTrue(GFactory::parseSuffixum('bAn')->isAMNYRight());
+        $this->assertFalse(GFactory::parseSuffixum('kor')->isAMNYRight());
+        $this->assertEquals('órakor', (string) GFactory::parseNP('óra')->makeTemporalis());
+        $this->assertFalse(GFactory::parseSuffixum('ista')->isAMNYRight());
+        $this->assertFalse(GFactory::parseSuffixum('izmus')->isAMNYRight());
+        $this->assertFalse(GFactory::parseSuffixum('szOr')->isAMNYRight());
+        $this->assertFalse(GFactory::parseSuffixum('sÁg')->isAMNYRight());
+        $this->assertEquals('butaság', (string) GFactory::parseNP('buta')->appendSuffix(GFactory::parseSuffixum('sÁg')));
+        $this->assertFalse(GFactory::parseSuffixum('i')->isAMNYRight());
+        $this->assertEquals('Budai', (string) GFactory::parseNP('Buda')->appendSuffix(GFactory::parseSuffixum('i')));
+        $this->assertEquals('Budái', (string) GFactory::parseNP('Buda')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3, 3)));
+        $this->assertFalse(GFactory::parseSuffixum('ként')->isAMNYRight());
+        $this->assertEquals('butaként', (string) GFactory::parseNP('buta')->appendSuffix(GFactory::parseSuffixum('ként')));
+        $this->assertEquals('butát', (string) GFactory::parseNP('buta')->makeAccusativus());
+
+        $this->assertEquals('távoztát', (string) GFactory::parseNP('távozta')->makeAccusativus());
+        $this->assertEquals('távoztakor', (string) GFactory::parseNP('távozta')->appendSuffix(GFactory::parseSuffixum('kor')));
+        $this->assertEquals('katonák', (string) GFactory::parseNP('katona')->makePlural());
+        $this->assertEquals('katonaság', (string) GFactory::parseNP('katona')->appendSuffix(GFactory::parseSuffixum('sÁg')));
+        $this->assertEquals('hazait', (string) GFactory::parseNP('hazai')->makeAccusativus());
+        //$this->assertEquals('hazaiak', (string) GFactory::parseNP('hazai')->makePlural());
+        //$this->assertEquals('megyeiek', (string) GFactory::parseNP('megyei')->makePlural());
+    }
+
+    public function testDoubleConsonant()
+    {
+        $this->assertEquals('bb', Phonology::doubleConsonant('b'));
+        $this->assertEquals('bb', Phonology::doubleConsonant('bb'));
+        $this->assertEquals('cc', Phonology::doubleConsonant('c'));
+        $this->assertEquals('ccs', Phonology::doubleConsonant('cs'));
+        $this->assertEquals('ccs', Phonology::doubleConsonant('ccs'));
+        $this->assertEquals('dd', Phonology::doubleConsonant('d'));
+        $this->assertEquals('ddz', Phonology::doubleConsonant('dz'));
+        $this->assertEquals('ddz', Phonology::doubleConsonant('ddz'));
+        $this->assertEquals('ddzs', Phonology::doubleConsonant('dzs'));
+        $this->assertEquals('ddzs', Phonology::doubleConsonant('ddzs'));
+        $this->assertEquals('ff', Phonology::doubleConsonant('f'));
+        $this->assertEquals('ff', Phonology::doubleConsonant('ff'));
+        $this->assertEquals('gg', Phonology::doubleConsonant('g'));
+        $this->assertEquals('gg', Phonology::doubleConsonant('gg'));
+        $this->assertEquals('ggy', Phonology::doubleConsonant('gy'));
+        $this->assertEquals('ggy', Phonology::doubleConsonant('ggy'));
+        $this->assertEquals('hh', Phonology::doubleConsonant('h'));
+        $this->assertEquals('jj', Phonology::doubleConsonant('j'));
+        $this->assertEquals('jj', Phonology::doubleConsonant('jj'));
+        $this->assertEquals('kk', Phonology::doubleConsonant('k'));
+        $this->assertEquals('kk', Phonology::doubleConsonant('kk'));
+        $this->assertEquals('ll', Phonology::doubleConsonant('l'));
+        $this->assertEquals('ll', Phonology::doubleConsonant('ll'));
+        $this->assertEquals('lly', Phonology::doubleConsonant('ly'));
+        $this->assertEquals('lly', Phonology::doubleConsonant('lly'));
+        $this->assertEquals('mm', Phonology::doubleConsonant('m'));
+        $this->assertEquals('mm', Phonology::doubleConsonant('mm'));
+        $this->assertEquals('nn', Phonology::doubleConsonant('n'));
+        $this->assertEquals('nn', Phonology::doubleConsonant('nn'));
+        $this->assertEquals('nny', Phonology::doubleConsonant('ny'));
+        $this->assertEquals('nny', Phonology::doubleConsonant('nny'));
+        $this->assertEquals('pp', Phonology::doubleConsonant('p'));
+        $this->assertEquals('pp', Phonology::doubleConsonant('pp'));
+        $this->assertEquals('qq', Phonology::doubleConsonant('q'));
+        $this->assertEquals('rr', Phonology::doubleConsonant('r'));
+        $this->assertEquals('rr', Phonology::doubleConsonant('rr'));
+        $this->assertEquals('ss', Phonology::doubleConsonant('s'));
+        $this->assertEquals('ss', Phonology::doubleConsonant('ss'));
+        $this->assertEquals('ssz', Phonology::doubleConsonant('sz'));
+        $this->assertEquals('ssz', Phonology::doubleConsonant('ssz'));
+        $this->assertEquals('tt', Phonology::doubleConsonant('t'));
+        $this->assertEquals('tt', Phonology::doubleConsonant('tt'));
+        $this->assertEquals('tty', Phonology::doubleConsonant('ty'));
+        $this->assertEquals('tty', Phonology::doubleConsonant('tty'));
+        $this->assertEquals('vv', Phonology::doubleConsonant('v'));
+        $this->assertEquals('vv', Phonology::doubleConsonant('vv'));
+        $this->assertEquals('ww', Phonology::doubleConsonant('w'));
+        $this->assertEquals('xx', Phonology::doubleConsonant('x'));
+        $this->assertEquals('zz', Phonology::doubleConsonant('z'));
+        $this->assertEquals('zz', Phonology::doubleConsonant('zz'));
+        $this->assertEquals('zzs', Phonology::doubleConsonant('zs'));
+        $this->assertEquals('zzs', Phonology::doubleConsonant('zzs'));
+    }
+
+    public function testLastConsonant()
+    {
+        $this->assertEquals('b', Phonology::getLastConsonant('galamb'));
+        $this->assertEquals('bb', Phonology::getLastConsonant('szebb'));
+        $this->assertEquals('c', Phonology::getLastConsonant('léc'));
+        $this->assertEquals('cs', Phonology::getLastConsonant('mécs'));
+        $this->assertEquals('ccs', Phonology::getLastConsonant('meccs'));
+        $this->assertEquals('d', Phonology::getLastConsonant('fajd'));
+        $this->assertEquals('dz', Phonology::getLastConsonant('edz'));
+        $this->assertEquals('ddz', Phonology::getLastConsonant('xeddz'));
+        $this->assertEquals('dzs', Phonology::getLastConsonant('bridzs'));
+        $this->assertEquals('ddzs', Phonology::getLastConsonant('briddzs'));
+        $this->assertEquals('f', Phonology::getLastConsonant('xef'));
+        $this->assertEquals('ff', Phonology::getLastConsonant('xeff'));
+        $this->assertEquals('g', Phonology::getLastConsonant('ág'));
+        $this->assertEquals('gg', Phonology::getLastConsonant('agg'));
+        $this->assertEquals('gy', Phonology::getLastConsonant('megy'));
+        $this->assertEquals('ggy', Phonology::getLastConsonant('meggy'));
+        $this->assertEquals('h', Phonology::getLastConsonant('düh'));
+        $this->assertEquals('j', Phonology::getLastConsonant('díj'));
+        $this->assertEquals('jj', Phonology::getLastConsonant('fejj'));
+        $this->assertEquals('k', Phonology::getLastConsonant('mák'));
+        $this->assertEquals('kk', Phonology::getLastConsonant('makk'));
+        $this->assertEquals('l', Phonology::getLastConsonant('ál'));
+        $this->assertEquals('ll', Phonology::getLastConsonant('áll'));
+        $this->assertEquals('ly', Phonology::getLastConsonant('mély'));
+        $this->assertEquals('lly', Phonology::getLastConsonant('gally'));
+        $this->assertEquals('m', Phonology::getLastConsonant('ham'));
+        $this->assertEquals('mm', Phonology::getLastConsonant('hamm'));
+        $this->assertEquals('n', Phonology::getLastConsonant('mén'));
+        $this->assertEquals('nn', Phonology::getLastConsonant('benn'));
+        $this->assertEquals('ny', Phonology::getLastConsonant('lány'));
+        $this->assertEquals('nny', Phonology::getLastConsonant('szenny'));
+        $this->assertEquals('p', Phonology::getLastConsonant('szép'));
+        $this->assertEquals('pp', Phonology::getLastConsonant('csepp'));
+        $this->assertEquals('q', Phonology::getLastConsonant('faq'));
+        $this->assertEquals('r', Phonology::getLastConsonant('dir'));
+        $this->assertEquals('rr', Phonology::getLastConsonant('durr'));
+        $this->assertEquals('s', Phonology::getLastConsonant('dés'));
+        $this->assertEquals('ss', Phonology::getLastConsonant('ess'));
+        $this->assertEquals('sz', Phonology::getLastConsonant('ész'));
+        $this->assertEquals('ssz', Phonology::getLastConsonant('xessz'));
+        $this->assertEquals('t', Phonology::getLastConsonant('lát'));
+        $this->assertEquals('tt', Phonology::getLastConsonant('lőtt'));
+        $this->assertEquals('ty', Phonology::getLastConsonant('báty'));
+        $this->assertEquals('tty', Phonology::getLastConsonant('xetty'));
+        $this->assertEquals('v', Phonology::getLastConsonant('hamv'));
+        $this->assertEquals('vv', Phonology::getLastConsonant('xevv'));
+        $this->assertEquals('w', Phonology::getLastConsonant('how'));
+        $this->assertEquals('x', Phonology::getLastConsonant('bix'));
+        $this->assertEquals('z', Phonology::getLastConsonant('bűz'));
+        $this->assertEquals('zz', Phonology::getLastConsonant('bízz'));
+        $this->assertEquals('zs', Phonology::getLastConsonant('bézs'));
+        $this->assertEquals('zzs', Phonology::getLastConsonant('xezzs'));
+    }
+
+// </py>
+
     public function testWordForm()
     {
         $N = GFactory::parseNP('ember');
@@ -270,88 +466,6 @@ class EmberTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('fűvel', (string) GFactory::parseNP('fű')->makeInstrumentalis());
         $this->assertEquals('fával', (string) GFactory::parseNP('fa')->makeInstrumentalis());
         $this->assertEquals('marhával', (string) GFactory::parseNP('marha')->makeInstrumentalis());
-    }
-
-    public function testAMNY()
-    {
-        $this->assertEquals('fát', (string) GFactory::parseNP('fa')->makeAccusativus());
-        $this->assertEquals('almás', (string) GFactory::parseNP('alma')->appendSuffix(GFactory::parseSuffixum('_Vs')));
-        //$this->assertEquals('tartják', (string) GFactory::parseV('tart')->
-        $this->assertEquals('házában', (string) GFactory::parseNP('ház')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3))->makeInessivus());
-        $this->assertEquals('létrám', (string) GFactory::parseNP('létra')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 1)));
-        $this->assertEquals('marhái', (string) GFactory::parseNP('marha')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3, 3)));
-        // @todo $this->assertEquals('kutyául', (string) GFactory::parseNP('kutya')->makeEssivusFormalis());
-        $this->assertEquals('deltáig', (string) GFactory::parseNP('delta')->makeTerminativus());
-        $this->assertEquals('Vargát', (string) GFactory::parseNP('Varga')->makeAccusativus());
-        $this->assertEquals('portán', (string) GFactory::parseNP('porta')->makeSuperessivus());
-        $this->assertEquals('lustát', (string) GFactory::parseNP('lusta')->makeAccusativus());
-        $this->assertEquals('medvét', (string) GFactory::parseNP('medve')->makeAccusativus());
-        $this->assertEquals('epét', (string) GFactory::parseNP('epe')->makeAccusativus());
-        $this->assertEquals('képe', (string) GFactory::parseNP('kép')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3)));
-        $this->assertEquals('képet', (string) GFactory::parseNP('kép')->makeAccusativus());
-        $this->assertEquals('képét', (string) GFactory::parseNP('kép')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3))->makeAccusativus());
-        $this->assertEquals('vesét', (string) GFactory::parseNP('vese')->makeAccusativus());
-        $this->assertEquals('sörtét', (string) GFactory::parseNP('sörte')->makeAccusativus());
-        $this->assertEquals('mércét', (string) GFactory::parseNP('mérce')->makeAccusativus());
-        $this->assertEquals('csempét', (string) GFactory::parseNP('csempe')->makeAccusativus());
-        $this->assertEquals('estét', (string) GFactory::parseNP('este')->makeAccusativus());
-        $this->assertEquals('feketét', (string) GFactory::parseNP('fekete')->makeAccusativus());
-
-        $this->assertTrue(GFactory::parseSuffixum('bAn')->isAMNYRight());
-        $this->assertFalse(GFactory::parseSuffixum('kor')->isAMNYRight());
-        $this->assertEquals('órakor', (string) GFactory::parseNP('óra')->makeTemporalis());
-        $this->assertFalse(GFactory::parseSuffixum('ista')->isAMNYRight());
-        $this->assertFalse(GFactory::parseSuffixum('izmus')->isAMNYRight());
-        $this->assertFalse(GFactory::parseSuffixum('szOr')->isAMNYRight());
-        $this->assertFalse(GFactory::parseSuffixum('sÁg')->isAMNYRight());
-        $this->assertEquals('butaság', (string) GFactory::parseNP('buta')->appendSuffix(GFactory::parseSuffixum('sÁg')));
-        $this->assertFalse(GFactory::parseSuffixum('i')->isAMNYRight());
-        $this->assertEquals('Budai', (string) GFactory::parseNP('Buda')->appendSuffix(GFactory::parseSuffixum('i')));
-        $this->assertEquals('Budái', (string) GFactory::parseNP('Buda')->appendSuffix(PossessiveSuffixum::makeNumPers(1, 3, 3)));
-        $this->assertFalse(GFactory::parseSuffixum('ként')->isAMNYRight());
-        $this->assertEquals('butaként', (string) GFactory::parseNP('buta')->appendSuffix(GFactory::parseSuffixum('ként')));
-        $this->assertEquals('butát', (string) GFactory::parseNP('buta')->makeAccusativus());
-
-        $this->assertEquals('távoztát', (string) GFactory::parseNP('távozta')->makeAccusativus());
-        $this->assertEquals('távoztakor', (string) GFactory::parseNP('távozta')->appendSuffix(GFactory::parseSuffixum('kor')));
-        $this->assertEquals('katonák', (string) GFactory::parseNP('katona')->makePlural());
-        $this->assertEquals('katonaság', (string) GFactory::parseNP('katona')->appendSuffix(GFactory::parseSuffixum('sÁg')));
-        $this->assertEquals('hazait', (string) GFactory::parseNP('hazai')->makeAccusativus());
-        //$this->assertEquals('hazaiak', (string) GFactory::parseNP('hazai')->makePlural());
-        //$this->assertEquals('megyeiek', (string) GFactory::parseNP('megyei')->makePlural());
-    }
-
-    public function testVowelHarmony()
-    {
-        $this->assertEquals(true , Phonology::getPropagatedI('ember'), 'ember');
-        $this->assertEquals(false, Phonology::getPropagatedI('ház'), 'ház');
-        $this->assertEquals(true , Phonology::getPropagatedI('föld'), 'föld');
-        $this->assertEquals(true , Phonology::getPropagatedI('kert'), 'kert');
-        $this->assertEquals(true , Phonology::getPropagatedI('kéz'), 'kéz');
-        $this->assertEquals(false, Phonology::getPropagatedI('út'), 'út');
-        $this->assertEquals(true , Phonology::getPropagatedI('kövér'), 'kövér');
-        $this->assertEquals(true , Phonology::getPropagatedI('sofőr'), 'sofőr');
-        $this->assertEquals(false, Phonology::getPropagatedI('kőfal'), 'kőfal');
-        $this->assertEquals(false, Phonology::getPropagatedI('bika'), 'bika');
-        $this->assertEquals(false, Phonology::getPropagatedI('nüansz'), 'nüansz');
-
-        $this->assertEquals(false, Phonology::getPropagatedU('ház'), 'ház');
-        $this->assertEquals(false, Phonology::getPropagatedU('kert'), 'kert');
-        $this->assertEquals(true , Phonology::getPropagatedU('föld'), 'föld');
-        $this->assertEquals(false, Phonology::getPropagatedU('kéz'), 'kéz');
-
-        $this->assertEquals(false, Phonology::needSuffixI('ház'), 'ház');
-        $this->assertEquals(true , Phonology::needSuffixI('kert'), 'kert');
-        $this->assertEquals(true , Phonology::needSuffixI('föld'), 'föld');
-        $this->assertEquals(true , Phonology::needSuffixI('tök'), 'tök');
-        $this->assertEquals(true , Phonology::needSuffixI('kéz'), 'kéz');
-
-        $this->assertEquals(false, Phonology::needSuffixU('ház'), 'ház');
-        $this->assertEquals(false, Phonology::needSuffixU('kert'), 'kert');
-        $this->assertEquals(true , Phonology::needSuffixU('föld'), 'föld');
-        $this->assertEquals(true , Phonology::needSuffixU('tök'), 'tök');
-        $this->assertEquals(false, Phonology::needSuffixU('kéz'), 'kéz');
-
     }
 
     public function testNominalCases()
@@ -777,118 +891,6 @@ class EmberTest extends PHPUnit_Framework_TestCase
         olvasni fogják
 
          */
-    }
-
-    public function testDoubleConsonant()
-    {
-        $this->assertEquals('bb', Phonology::doubleConsonant('b'));
-        $this->assertEquals('bb', Phonology::doubleConsonant('bb'));
-        $this->assertEquals('cc', Phonology::doubleConsonant('c'));
-        $this->assertEquals('ccs', Phonology::doubleConsonant('cs'));
-        $this->assertEquals('ccs', Phonology::doubleConsonant('ccs'));
-        $this->assertEquals('dd', Phonology::doubleConsonant('d'));
-        $this->assertEquals('ddz', Phonology::doubleConsonant('dz'));
-        $this->assertEquals('ddz', Phonology::doubleConsonant('ddz'));
-        $this->assertEquals('ddzs', Phonology::doubleConsonant('dzs'));
-        $this->assertEquals('ddzs', Phonology::doubleConsonant('ddzs'));
-        $this->assertEquals('ff', Phonology::doubleConsonant('f'));
-        $this->assertEquals('ff', Phonology::doubleConsonant('ff'));
-        $this->assertEquals('gg', Phonology::doubleConsonant('g'));
-        $this->assertEquals('gg', Phonology::doubleConsonant('gg'));
-        $this->assertEquals('ggy', Phonology::doubleConsonant('gy'));
-        $this->assertEquals('ggy', Phonology::doubleConsonant('ggy'));
-        $this->assertEquals('hh', Phonology::doubleConsonant('h'));
-        $this->assertEquals('jj', Phonology::doubleConsonant('j'));
-        $this->assertEquals('jj', Phonology::doubleConsonant('jj'));
-        $this->assertEquals('kk', Phonology::doubleConsonant('k'));
-        $this->assertEquals('kk', Phonology::doubleConsonant('kk'));
-        $this->assertEquals('ll', Phonology::doubleConsonant('l'));
-        $this->assertEquals('ll', Phonology::doubleConsonant('ll'));
-        $this->assertEquals('lly', Phonology::doubleConsonant('ly'));
-        $this->assertEquals('lly', Phonology::doubleConsonant('lly'));
-        $this->assertEquals('mm', Phonology::doubleConsonant('m'));
-        $this->assertEquals('mm', Phonology::doubleConsonant('mm'));
-        $this->assertEquals('nn', Phonology::doubleConsonant('n'));
-        $this->assertEquals('nn', Phonology::doubleConsonant('nn'));
-        $this->assertEquals('nny', Phonology::doubleConsonant('ny'));
-        $this->assertEquals('nny', Phonology::doubleConsonant('nny'));
-        $this->assertEquals('pp', Phonology::doubleConsonant('p'));
-        $this->assertEquals('pp', Phonology::doubleConsonant('pp'));
-        $this->assertEquals('qq', Phonology::doubleConsonant('q'));
-        $this->assertEquals('rr', Phonology::doubleConsonant('r'));
-        $this->assertEquals('rr', Phonology::doubleConsonant('rr'));
-        $this->assertEquals('ss', Phonology::doubleConsonant('s'));
-        $this->assertEquals('ss', Phonology::doubleConsonant('ss'));
-        $this->assertEquals('ssz', Phonology::doubleConsonant('sz'));
-        $this->assertEquals('ssz', Phonology::doubleConsonant('ssz'));
-        $this->assertEquals('tt', Phonology::doubleConsonant('t'));
-        $this->assertEquals('tt', Phonology::doubleConsonant('tt'));
-        $this->assertEquals('tty', Phonology::doubleConsonant('ty'));
-        $this->assertEquals('tty', Phonology::doubleConsonant('tty'));
-        $this->assertEquals('vv', Phonology::doubleConsonant('v'));
-        $this->assertEquals('vv', Phonology::doubleConsonant('vv'));
-        $this->assertEquals('ww', Phonology::doubleConsonant('w'));
-        $this->assertEquals('xx', Phonology::doubleConsonant('x'));
-        $this->assertEquals('zz', Phonology::doubleConsonant('z'));
-        $this->assertEquals('zz', Phonology::doubleConsonant('zz'));
-        $this->assertEquals('zzs', Phonology::doubleConsonant('zs'));
-        $this->assertEquals('zzs', Phonology::doubleConsonant('zzs'));
-    }
-
-    public function testLastConsonant()
-    {
-        $this->assertEquals('b', Phonology::getLastConsonant('galamb'));
-        $this->assertEquals('bb', Phonology::getLastConsonant('szebb'));
-        $this->assertEquals('c', Phonology::getLastConsonant('léc'));
-        $this->assertEquals('cs', Phonology::getLastConsonant('mécs'));
-        $this->assertEquals('ccs', Phonology::getLastConsonant('meccs'));
-        $this->assertEquals('d', Phonology::getLastConsonant('fajd'));
-        $this->assertEquals('dz', Phonology::getLastConsonant('edz'));
-        $this->assertEquals('ddz', Phonology::getLastConsonant('xeddz'));
-        $this->assertEquals('dzs', Phonology::getLastConsonant('bridzs'));
-        $this->assertEquals('ddzs', Phonology::getLastConsonant('briddzs'));
-        $this->assertEquals('f', Phonology::getLastConsonant('xef'));
-        $this->assertEquals('ff', Phonology::getLastConsonant('xeff'));
-        $this->assertEquals('g', Phonology::getLastConsonant('ág'));
-        $this->assertEquals('gg', Phonology::getLastConsonant('agg'));
-        $this->assertEquals('gy', Phonology::getLastConsonant('megy'));
-        $this->assertEquals('ggy', Phonology::getLastConsonant('meggy'));
-        $this->assertEquals('h', Phonology::getLastConsonant('düh'));
-        $this->assertEquals('j', Phonology::getLastConsonant('díj'));
-        $this->assertEquals('jj', Phonology::getLastConsonant('fejj'));
-        $this->assertEquals('k', Phonology::getLastConsonant('mák'));
-        $this->assertEquals('kk', Phonology::getLastConsonant('makk'));
-        $this->assertEquals('l', Phonology::getLastConsonant('ál'));
-        $this->assertEquals('ll', Phonology::getLastConsonant('áll'));
-        $this->assertEquals('ly', Phonology::getLastConsonant('mély'));
-        $this->assertEquals('lly', Phonology::getLastConsonant('gally'));
-        $this->assertEquals('m', Phonology::getLastConsonant('ham'));
-        $this->assertEquals('mm', Phonology::getLastConsonant('hamm'));
-        $this->assertEquals('n', Phonology::getLastConsonant('mén'));
-        $this->assertEquals('nn', Phonology::getLastConsonant('benn'));
-        $this->assertEquals('ny', Phonology::getLastConsonant('lány'));
-        $this->assertEquals('nny', Phonology::getLastConsonant('szenny'));
-        $this->assertEquals('p', Phonology::getLastConsonant('szép'));
-        $this->assertEquals('pp', Phonology::getLastConsonant('csepp'));
-        $this->assertEquals('q', Phonology::getLastConsonant('faq'));
-        $this->assertEquals('r', Phonology::getLastConsonant('dir'));
-        $this->assertEquals('rr', Phonology::getLastConsonant('durr'));
-        $this->assertEquals('s', Phonology::getLastConsonant('dés'));
-        $this->assertEquals('ss', Phonology::getLastConsonant('ess'));
-        $this->assertEquals('sz', Phonology::getLastConsonant('ész'));
-        $this->assertEquals('ssz', Phonology::getLastConsonant('xessz'));
-        $this->assertEquals('t', Phonology::getLastConsonant('lát'));
-        $this->assertEquals('tt', Phonology::getLastConsonant('lőtt'));
-        $this->assertEquals('ty', Phonology::getLastConsonant('báty'));
-        $this->assertEquals('tty', Phonology::getLastConsonant('xetty'));
-        $this->assertEquals('v', Phonology::getLastConsonant('hamv'));
-        $this->assertEquals('vv', Phonology::getLastConsonant('xevv'));
-        $this->assertEquals('w', Phonology::getLastConsonant('how'));
-        $this->assertEquals('x', Phonology::getLastConsonant('bix'));
-        $this->assertEquals('z', Phonology::getLastConsonant('bűz'));
-        $this->assertEquals('zz', Phonology::getLastConsonant('bízz'));
-        $this->assertEquals('zs', Phonology::getLastConsonant('bézs'));
-        $this->assertEquals('zzs', Phonology::getLastConsonant('xezzs'));
     }
 
     public function checkConjugation(& $V, $verbforms)

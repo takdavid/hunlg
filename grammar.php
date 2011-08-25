@@ -7,6 +7,7 @@ mb_internal_encoding('UTF-8');
 
 class Phonology
 {
+
     /** 
      * [-A]
      * [-U]
@@ -364,6 +365,7 @@ interface iWordformPhonology
 class Wordform implements iWordformMorphology, iWordformPhonology
 {
     public $lemma = '';
+    public $lemma2 = '';
     public $ortho = '';
     public $is_vtmr = false; 
     public $is_btmr = false; 
@@ -396,8 +398,11 @@ class Wordform implements iWordformMorphology, iWordformPhonology
 
     // }}}
 
+// </py>
+
     // iWordformMorphology {{{
 
+    // @todo do not refer to Suffixum here : it is a descendant of Wordform
     public function & appendSuffix(Suffixum & $suffix)
     {
         $_input_class = $suffix->getInputClass();
@@ -1529,7 +1534,6 @@ class Nomen extends Wordform implements iPossessable, iNominalCases, iVirtualNom
     public $person = 3;
 
     public $is_jaje = NULL;
-    public $lemma2 = '';
 
     public function __construct($lemma, $ortho=NULL)
     {
